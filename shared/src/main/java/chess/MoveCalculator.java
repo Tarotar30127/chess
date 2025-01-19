@@ -123,6 +123,37 @@ public class MoveCalculator {
         }
         return moves;
     }
+
+    public static Collection<ChessMove> moveKnight(ChessBoard board, ChessPosition myPosition) {
+        int row = myPosition.getRow();
+        int col = myPosition.getColumn();
+        Collection<ChessMove> moves = new ArrayList<>();
+        int [][] movement = {{2,1},{2,-1},{-2,-1},{-2,1},{1,2},{1,-2},{-1,-2},{-1,2}};
+        for (int[] move : movement) {
+            int r = row;
+            int c = col;
+
+            r += move[0];
+            c += move[1];
+
+            boolean baseCase = (r < 1) || (r > 8) || (c < 1) || (c > 8);
+            if (baseCase == true) {
+                continue;
+            }
+            ChessPosition focus = new ChessPosition(r, c);
+            ChessPiece occupied = board.getPiece(focus);
+            if (occupied != null) {
+                if (occupied.getTeamColor() != board.getPiece(myPosition).getTeamColor()) {
+                    moves.add(new ChessMove(myPosition, focus, null));
+                }
+                continue;
+            }
+            moves.add(new ChessMove(myPosition, focus, null));
+
+
+        }
+        return moves;
+    }
     public static Collection<ChessMove> moveWhitePawn(ChessBoard board, ChessPosition myPosition) {
         int row = myPosition.getRow();
         int col = myPosition.getColumn();
@@ -155,9 +186,7 @@ public class MoveCalculator {
                 continue;
             }
 
-            if (row == 2){
-                moves.add(new ChessMove(myPosition, focus, null));
-            }
+
 
 
         }
@@ -168,7 +197,7 @@ public class MoveCalculator {
         int row = myPosition.getRow();
         int col = myPosition.getColumn();
         Collection<ChessMove> moves = new ArrayList<>();
-        int [][] movement = {{-1,-1},{-1,0},{-1,1},{2,0}};
+        int [][] movement = {{-1,-1},{-1,0},{-1,1},{-2,0}};
         for (int[] move : movement) {
             int r = row;
             int c = col;
@@ -194,10 +223,6 @@ public class MoveCalculator {
                     moves.add(new ChessMove(myPosition, focus, null));
                 }
                 continue;
-            }
-
-            if (row == 7){
-                moves.add(new ChessMove(myPosition, focus, null));
             }
 
 
