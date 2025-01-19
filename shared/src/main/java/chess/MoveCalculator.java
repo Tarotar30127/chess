@@ -159,6 +159,17 @@ public class MoveCalculator {
         int col = myPosition.getColumn();
         Collection<ChessMove> moves = new ArrayList<>();
         int [][] movement = {{1,-1},{1,0},{1,1}};
+        if (row == 2) {
+            ChessPosition jump = new ChessPosition(4, col);
+            ChessPosition front = new ChessPosition(3, col);
+            ChessPiece occupied2 = board.getPiece(front);
+            ChessPiece occupied1 = board.getPiece(jump);
+            if (occupied1 != null) {
+                if (occupied2 != null){
+                    moves.add(new ChessMove(myPosition, jump, null));
+                }
+            }
+        }
         for (int[] move : movement) {
             int r = row;
             int c = col;
@@ -175,13 +186,30 @@ public class MoveCalculator {
             ChessPiece occupied = board.getPiece(focus);
             if (col == c){
                 if (occupied == null) {
-                    moves.add(new ChessMove(myPosition, focus, null));
+                    if (r == 8 ){
+                        moves.add(new ChessMove(myPosition, focus, ChessPiece.PieceType.QUEEN));
+                        moves.add(new ChessMove(myPosition, focus, ChessPiece.PieceType.KNIGHT));
+                        moves.add(new ChessMove(myPosition, focus, ChessPiece.PieceType.ROOK));
+                        moves.add(new ChessMove(myPosition, focus, ChessPiece.PieceType.BISHOP));
+                    }
+                    else{
+                        moves.add(new ChessMove(myPosition, focus, null));
+                    }
+
                 }
                 continue;
             }
             if (occupied != null) {
                 if (occupied.getTeamColor() != board.getPiece(myPosition).getTeamColor()) {
-                    moves.add(new ChessMove(myPosition, focus, null));
+                    if (r == 8 ){
+                        moves.add(new ChessMove(myPosition, focus, ChessPiece.PieceType.QUEEN));
+                        moves.add(new ChessMove(myPosition, focus, ChessPiece.PieceType.KNIGHT));
+                        moves.add(new ChessMove(myPosition, focus, ChessPiece.PieceType.ROOK));
+                        moves.add(new ChessMove(myPosition, focus, ChessPiece.PieceType.BISHOP));
+                    }
+                    else{
+                        moves.add(new ChessMove(myPosition, focus, null));
+                    }
                 }
                 continue;
             }
@@ -197,7 +225,18 @@ public class MoveCalculator {
         int row = myPosition.getRow();
         int col = myPosition.getColumn();
         Collection<ChessMove> moves = new ArrayList<>();
-        int [][] movement = {{-1,-1},{-1,0},{-1,1},{-2,0}};
+        int [][] movement = {{-1,-1},{-1,0},{-1,1}};
+        if (row == 7) {
+            ChessPosition jump = new ChessPosition(5, col);
+            ChessPosition front = new ChessPosition(6, col);
+            ChessPiece occupied2 = board.getPiece(front);
+            ChessPiece occupied1 = board.getPiece(jump);
+            if (occupied1 != null) {
+                if (occupied2 != null){
+                    moves.add(new ChessMove(myPosition, jump, null));
+                }
+            }
+        }
         for (int[] move : movement) {
             int r = row;
             int c = col;
@@ -214,15 +253,31 @@ public class MoveCalculator {
             ChessPiece occupied = board.getPiece(focus);
             if (col == c){
                 if (occupied == null) {
-                    moves.add(new ChessMove(myPosition, focus, null));
+                    if (r == 1 ){
+                        moves.add(new ChessMove(myPosition, focus, ChessPiece.PieceType.QUEEN));
+                        moves.add(new ChessMove(myPosition, focus, ChessPiece.PieceType.KNIGHT));
+                        moves.add(new ChessMove(myPosition, focus, ChessPiece.PieceType.ROOK));
+                        moves.add(new ChessMove(myPosition, focus, ChessPiece.PieceType.BISHOP));
+                    }
+                    else{
+                        moves.add(new ChessMove(myPosition, focus, null));
+                    }
                 }
                 continue;
             }
             if (occupied != null) {
                 if (occupied.getTeamColor() != board.getPiece(myPosition).getTeamColor()) {
-                    moves.add(new ChessMove(myPosition, focus, null));
+                    if (r == 1 ){
+                        moves.add(new ChessMove(myPosition, focus, ChessPiece.PieceType.QUEEN));
+                        moves.add(new ChessMove(myPosition, focus, ChessPiece.PieceType.KNIGHT));
+                        moves.add(new ChessMove(myPosition, focus, ChessPiece.PieceType.ROOK));
+                        moves.add(new ChessMove(myPosition, focus, ChessPiece.PieceType.BISHOP));
+                    }
+                    else{
+                        moves.add(new ChessMove(myPosition, focus, null));
+                    }
                 }
-                continue;
+
             }
 
 
