@@ -164,8 +164,8 @@ public class MoveCalculator {
             ChessPosition front = new ChessPosition(3, col);
             ChessPiece occupied2 = board.getPiece(front);
             ChessPiece occupied1 = board.getPiece(jump);
-            if (occupied1 != null) {
-                if (occupied2 != null){
+            if (occupied1 == null) {
+                if (occupied2 == null){
                     moves.add(new ChessMove(myPosition, jump, null));
                 }
             }
@@ -231,8 +231,8 @@ public class MoveCalculator {
             ChessPosition front = new ChessPosition(6, col);
             ChessPiece occupied2 = board.getPiece(front);
             ChessPiece occupied1 = board.getPiece(jump);
-            if (occupied1 != null) {
-                if (occupied2 != null){
+            if (occupied1 == null) {
+                if (occupied2 == null){
                     moves.add(new ChessMove(myPosition, jump, null));
                 }
             }
