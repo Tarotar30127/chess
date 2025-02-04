@@ -93,34 +93,34 @@ public class ChessPiece {
         Collection<ChessMove> moves = new ArrayList<>();
         PieceType pieceType = piece.getPieceType();
         ChessGame.TeamColor pieceColor = piece.getTeamColor();
-
+        MovementCalculator calculate;
         switch (pieceType) {
             case PieceType.KING -> {
-                moves = MoveCalculator.moveKing(board, myPosition);
+                moves = new MoveKing().PieceMoves(board, myPosition);
                 return moves;
             }
             case PieceType.QUEEN -> {
-                moves = MoveCalculator.moveQueen(board, myPosition);
+                moves = new MoveQueen().PieceMoves(board, myPosition);
                 return moves;
             }
             case PieceType.BISHOP -> {
-                moves = MoveCalculator.moveBishop(board, myPosition);
+                moves = new MoveBishop().PieceMoves(board, myPosition);
                 return moves;
             }
             case PieceType.KNIGHT -> {
-                moves = MoveCalculator.moveKnight(board, myPosition);
+                moves = new MoveKnight().PieceMoves(board, myPosition);
                 return moves;
             }
             case PieceType.ROOK -> {
-                moves = MoveCalculator.moveRook(board, myPosition);
+                moves = new MoveRook().PieceMoves(board, myPosition);
                 return moves;
             }
             case PieceType.PAWN -> {
                 if (pieceColor == ChessGame.TeamColor.WHITE) {
-                    moves = MoveCalculator.moveWhitePawn(board, myPosition);
+                    moves = new MoveWhitePawn().PieceMoves(board, myPosition);
                 }
                 else {
-                    moves = MoveCalculator.moveBlackPawn(board, myPosition);
+                    moves = new MoveBlackPawn().PieceMoves(board, myPosition);
                 }
                 return moves;
             }
