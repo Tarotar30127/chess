@@ -238,11 +238,7 @@ public class ChessGame {
                 }
             }
         }
-        if (isInCheck(teamColor)){
-            return false;
-
-        }
-        return true;
+        return !isInCheck(teamColor);
     }
 
     /**
