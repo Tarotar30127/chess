@@ -1,5 +1,7 @@
 package chess;
 
+import com.sun.source.tree.IfTree;
+
 import javax.lang.model.util.SimpleElementVisitor6;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,15 +15,12 @@ import java.util.Objects;
  */
 public class ChessGame {
     private TeamColor teamTurn;
-    private boolean inCheckmate;
-    private boolean stalemate;
     private ChessBoard board;
 
     public ChessGame() {
         this.teamTurn = TeamColor.WHITE;
-        this.inCheckmate = false;
-        this.stalemate = false;
         board = new ChessBoard();
+        board.resetBoard();
     }
 
     /**
@@ -40,25 +39,26 @@ public class ChessGame {
         this.teamTurn = team;
     }
 
+
+
+
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof ChessGame chessGame)) {
             return false;
         }
-        return inCheckmate == chessGame.inCheckmate && stalemate == chessGame.stalemate && teamTurn == chessGame.teamTurn && Objects.equals(board, chessGame.board);
+        return teamTurn == chessGame.teamTurn && Objects.equals(board, chessGame.board);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(teamTurn, inCheckmate, stalemate, board);
+        return Objects.hash(teamTurn, board);
     }
 
     @Override
     public String toString() {
         return "ChessGame{" +
                 "teamTurn=" + teamTurn +
-                ", inCheckmate=" + inCheckmate +
-                ", stalemate=" + stalemate +
                 ", board=" + board +
                 '}';
     }
@@ -195,7 +195,25 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        return this.inCheckmate;
+        if (isInCheck(teamColor)){
+            Collection<ChessMove> checkMoves;
+            for (int row = 1; row < 9; row++){
+                for (int col = 1; col < 9; col++){
+                    ChessPosition focus = new ChessPosition(row, col);
+                    ChessPiece attentionPiece = board.getPiece(focus);
+
+                    if ((attentionPiece != null)&&(attentionPiece.getTeamColor() == teamColor)){
+                        checkMoves = validMoves(focus);
+                        if (!checkMoves.isEmpty()){
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -206,7 +224,25 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        return this.stalemate;
+        Collection<ChessMove> checkMoves = new ArrayList<>();
+        for (int row = 1; row < 9; row++){
+            for (int col = 1; col < 9; col++){
+                ChessPosition focus = new ChessPosition(row, col);
+                ChessPiece attentionPiece = board.getPiece(focus);
+
+                if ((attentionPiece != null)&&(attentionPiece.getTeamColor() == teamColor)){
+                    checkMoves = validMoves(focus);
+                    if (!checkMoves.isEmpty()){
+                        return false;
+                    }
+                }
+            }
+        }
+        if (isInCheck(teamColor)){
+            return false;
+
+        }
+        return true;
     }
 
     /**
@@ -224,7 +260,6 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-
         return board;
     }
 }
