@@ -88,7 +88,6 @@ public class ChessPiece implements Cloneable{
             case PieceType.KNIGHT -> PieceType.KNIGHT;
             case PieceType.ROOK -> PieceType.ROOK;
             case PieceType.PAWN -> PieceType.PAWN;
-            default -> null;
         };
     }
 
@@ -104,7 +103,6 @@ public class ChessPiece implements Cloneable{
         Collection<ChessMove> moves = new ArrayList<>();
         PieceType pieceType = piece.getPieceType();
         ChessGame.TeamColor pieceColor = piece.getTeamColor();
-        MovementCalculator calculate;
         switch (pieceType) {
             case PieceType.KING -> {
                 moves = new MoveKing().PieceMoves(board, myPosition);
