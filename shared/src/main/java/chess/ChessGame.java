@@ -1,8 +1,5 @@
 package chess;
 
-import com.sun.source.tree.IfTree;
-
-import javax.lang.model.util.SimpleElementVisitor6;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
@@ -196,23 +193,36 @@ public class ChessGame {
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         if (isInCheck(teamColor)){
-            Collection<ChessMove> checkMoves;
-            for (int row = 1; row < 9; row++){
-                for (int col = 1; col < 9; col++){
-                    ChessPosition focus = new ChessPosition(row, col);
-                    ChessPiece attentionPiece = board.getPiece(focus);
-
-                    if ((attentionPiece != null)&&(attentionPiece.getTeamColor() == teamColor)){
-                        checkMoves = validMoves(focus);
-                        if (!checkMoves.isEmpty()){
-                            return false;
-                        }
-                    }
-                }
+            if (isCheckPositionInStalemate(teamColor)) {
+                return false;
             }
             return true;
         }
 
+        return false;
+    }
+
+    /**
+     * Determines if the given team is in checkmate
+     *
+     * @param teamColor which team to check for stalemate
+     * @return True if the specified team is in stalemate
+     */
+    private boolean isCheckPositionInStalemate(TeamColor teamColor) {
+        Collection<ChessMove> checkMoves;
+        for (int row = 1; row < 9; row++){
+            for (int col = 1; col < 9; col++){
+                ChessPosition focus = new ChessPosition(row, col);
+                ChessPiece attentionPiece = board.getPiece(focus);
+
+                if ((attentionPiece != null)&&(attentionPiece.getTeamColor() == teamColor)){
+                    checkMoves = validMoves(focus);
+                    if (!checkMoves.isEmpty()){
+                        return true;
+                    }
+                }
+            }
+        }
         return false;
     }
 
@@ -224,19 +234,8 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        Collection<ChessMove> checkMoves = new ArrayList<>();
-        for (int row = 1; row < 9; row++){
-            for (int col = 1; col < 9; col++){
-                ChessPosition focus = new ChessPosition(row, col);
-                ChessPiece attentionPiece = board.getPiece(focus);
-
-                if ((attentionPiece != null)&&(attentionPiece.getTeamColor() == teamColor)){
-                    checkMoves = validMoves(focus);
-                    if (!checkMoves.isEmpty()){
-                        return false;
-                    }
-                }
-            }
+        if (isCheckPositionInStalemate(teamColor)) {
+            return false;
         }
         return !isInCheck(teamColor);
     }
