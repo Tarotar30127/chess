@@ -4,7 +4,10 @@ import dataaccess.GameDAO;
 import dataaccess.UserDAO;
 import exception.ResponseException;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
+
+import java.util.Collection;
 import java.util.UUID;
 
 
@@ -74,6 +77,25 @@ public class UserService {
         }
         else {
             throw new ResponseException(401, "Error: unauthorized");
+        }
+    }
+
+    public Collection<GameData> getGame(String authToken) throws ResponseException {
+        if (authDAO.getAuth(authToken)){
+            return gameDAO.listgames();
+        }
+        else{
+            throw new ResponseException(401, "Error: unauthorized");
+        }
+    }
+
+    public void clear() throws ResponseException{
+        try {
+            gameDAO.clear();
+            authDAO.clear();
+            userDAO.clear();
+        } catch (ResponseException e) {
+            throw new ResponseException(500, "Error: unable to clear");
         }
     }
 }

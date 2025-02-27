@@ -16,10 +16,7 @@ public class MemoryAuthDAO implements AuthDAO{
 
     @Override
     public Boolean getAuth(String authToken) {
-        if (authDataMap.get(authToken) != null) {
-            return true;
-        }
-        return false;
+        re
     }
 
     @Override

@@ -5,12 +5,13 @@ import dataaccess.GameDAO;
 import exception.ResponseException;
 import model.AuthData;
 import model.UserData;
+import model.GameData;
 
 import service.UserService;
 import spark.Request;
 import spark.Response;
 
-import javax.lang.model.element.NestingKind;
+import java.util.Collection;
 
 public class ServerHandler {
     private final UserService userService;
@@ -40,7 +41,15 @@ public class ServerHandler {
 
     }
 
-    public Object getGames(Request request, Response response) {
+    public Object getGames(Request request, Response response) throws ResponseException{
+        try {
+            String authToken = request.headers("authorization");
+            Collection<GameData> games = userService.getGame(authToken);
+            response.status(200);
+            return new Gson().toJson(games);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
@@ -48,7 +57,7 @@ public class ServerHandler {
         String authToken = request.headers("authorization");
         userService.logout(authToken);
         response.status(200);
-        return null;
+        return new Gson().toJson(null);
     }
 
     public Object login(Request request, Response response) throws ResponseException{
@@ -66,5 +75,12 @@ public class ServerHandler {
         return new Gson().toJson(userAuthData);
     }
 
-
+    public Object clear(Request request, Response response) {
+        try {
+            userService.clear();
+            return null;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

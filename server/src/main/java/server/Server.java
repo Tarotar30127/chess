@@ -4,6 +4,7 @@ import dataaccess.AuthDAO;
 
 import dataaccess.GameDAO;
 import dataaccess.UserDAO;
+import service.UserService;
 import spark.*;
 
 public class Server {
@@ -12,6 +13,14 @@ public class Server {
     GameDAO gameDAO;
 
     static ServerHandler serverHandler;
+
+    public Server(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO) {
+        this.userDAO = userDAO;
+        this.authDAO = authDAO;
+        this.gameDAO = gameDAO;
+        UserService userService = new UserService(userDAO, authDAO, gameDAO);
+        serverHandler = new ServerHandler(userService);
+    }
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
@@ -31,6 +40,8 @@ public class Server {
         Spark.post("/game", serverHandler::createGame);
         // join game
         Spark.put("/game", serverHandler::joinGame);
+        // clear app
+        Spark.delete("/db", serverHandler::clear);
 
 
 
