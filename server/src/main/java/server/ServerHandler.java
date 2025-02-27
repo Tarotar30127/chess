@@ -18,13 +18,15 @@ public class ServerHandler {
     }
 
     public Object joinGame(Request request, Response response) {
-
+        String gameName = request.params(":gameID");
+        String authToken = request.headers("authToken");
     }
 
-    public Object createGame(Request request, Response response) {
+    public Object createGame(Request request, Response response) throws ResponseException {
         String gameName = request.params(":gameName");
         String authToken = request.headers("authToken");
         int gameID = userService.createGame(gameName, authToken);
+        response.status(200);
         return new Gson().toJson(gameID);
 
 
