@@ -1,6 +1,7 @@
 package server;
 
 import com.google.gson.Gson;
+import dataaccess.GameDAO;
 import exception.ResponseException;
 import model.AuthData;
 import model.UserData;
@@ -8,6 +9,8 @@ import model.UserData;
 import service.UserService;
 import spark.Request;
 import spark.Response;
+
+import javax.lang.model.element.NestingKind;
 
 public class ServerHandler {
     private final UserService userService;
@@ -18,13 +21,18 @@ public class ServerHandler {
     }
 
     public Object joinGame(Request request, Response response) {
-        String gameName = request.params(":gameID");
-        String authToken = request.headers("authToken");
+        record joinColorId(String playerColor, Integer gameID) {}
+        joinColorId joinData = new Gson().fromJson(request.body(), joinColorId.class);
+        String authToken = request.headers("authorization");
+        GameDAO.joinGame(joinData.gameID, joinData.playerColor(), authToken);
+        response.status(200);
+        return null;
+
     }
 
     public Object createGame(Request request, Response response) throws ResponseException {
-        String gameName = request.params(":gameName");
-        String authToken = request.headers("authToken");
+        String gameName = request.body();
+        String authToken = request.headers("authorization");
         int gameID = userService.createGame(gameName, authToken);
         response.status(200);
         return new Gson().toJson(gameID);
@@ -37,7 +45,7 @@ public class ServerHandler {
     }
 
     public Object logoutUser(Request request, Response response) throws ResponseException {
-        String authToken = request.headers("authToken");
+        String authToken = request.headers("authorization");
         userService.logout(authToken);
         response.status(200);
         return null;
