@@ -68,7 +68,7 @@ class UserDAOServerTest {
 
 
     public static void assertUserEqual(UserData expected, UserData actual) {
-        assertEquals(expected.userName(), actual.userName());
+        assertEquals(expected.username(), actual.username());
         assertEquals(expected.password(), actual.password());
     }
 }

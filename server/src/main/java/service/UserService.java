@@ -9,6 +9,7 @@ import model.UserData;
 import model.joinColorId;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.UUID;
 
 
@@ -31,23 +32,21 @@ public class UserService {
             } catch (RuntimeException e) {
                 throw new ResponseException(500, "Error: game not found");
             }
-            GameData possibleGame1 = new GameData(possibleGame.GameId(), authToken, possibleGame.BlackUserName(), possibleGame.game());
-            if ((possibleGame.WhiteUserName() != null) &&(PlayerColor.equals("White"))) {
-                possibleGame = possibleGame1;
-                gameDAO.updatePlayers(possibleGame);
-                return new joinColorId(PlayerColor, gameID);
+            GameData updatedGame;
+            if ("White".equals(PlayerColor)) {
+                updatedGame = new GameData(possibleGame.GameId(), authToken, possibleGame.BlackUserName(), possibleGame.game());
             }
-            if ((possibleGame.BlackUserName() != null) &&(PlayerColor.equals("Black"))){
-                possibleGame = possibleGame1;
-                gameDAO.updatePlayers(possibleGame);
-                return new joinColorId(PlayerColor, gameID);
+            else {
+                updatedGame = new GameData(possibleGame.GameId(), possibleGame.WhiteUserName(), authToken, possibleGame.game());
+            }
 
-            }
+            gameDAO.updatePlayers(updatedGame);
+            return new joinColorId(PlayerColor, gameID);
+
         }
         else{
             throw new ResponseException(401, "Error: unauthorized");
         }
-        return null;
 
     }
 
@@ -55,13 +54,13 @@ public class UserService {
     public AuthData loginUser(UserData user) {
         UserData retrivedUser;
         try {
-            retrivedUser = userDAO.getUser(user.userName());
+            retrivedUser = userDAO.getUser(user.username());
         } catch (ResponseException e) {
             throw new RuntimeException(e);
         }
         if (retrivedUser != null) {
             String AuthToken = generateToken();
-            AuthData authData = new AuthData(user.userName(), AuthToken);
+            AuthData authData = new AuthData(AuthToken, user.username());
             authDAO.addAuth(authData);
             return authData;
         }
@@ -76,7 +75,7 @@ public class UserService {
             throw new ResponseException(403, "Error: already taken");
         }
         String AuthToken = generateToken();
-        AuthData authData = new AuthData(user.userName(), AuthToken);
+        AuthData authData = new AuthData(AuthToken, user.username());
         authDAO.addAuth(authData);
         return authData;
     }
@@ -126,5 +125,18 @@ public class UserService {
         } catch (ResponseException e) {
             throw new ResponseException(500, "Error: unable to clear");
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof UserService that)) {
+            return false;
+        }
+        return Objects.equals(userDAO, that.userDAO) && Objects.equals(authDAO, that.authDAO) && Objects.equals(gameDAO, that.gameDAO);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userDAO, authDAO, gameDAO);
     }
 }

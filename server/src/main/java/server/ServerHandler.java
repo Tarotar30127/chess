@@ -2,7 +2,6 @@ package server;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import dataaccess.GameDAO;
 import exception.ResponseException;
 import model.AuthData;
 import model.UserData;
@@ -14,6 +13,7 @@ import spark.Request;
 import spark.Response;
 
 import java.util.Collection;
+import java.util.Objects;
 
 public class ServerHandler {
     private final UserService userService;
@@ -90,5 +90,18 @@ public class ServerHandler {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ServerHandler that)) {
+            return false;
+        }
+        return Objects.equals(userService, that.userService);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(userService);
     }
 }
