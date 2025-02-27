@@ -5,9 +5,7 @@ import model.GameData;
 import java.util.Collection;
 
 public interface GameDAO {
-    static void joinGame(Integer gameID, String s, String authToken) {
-    }
-
+    void updatePlayers(GameData existingGame);
     int createGame(String gameName);
     Collection<GameData> listgames();
     GameData getGame(int gameID);

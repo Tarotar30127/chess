@@ -1,12 +1,14 @@
 package server;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import dataaccess.GameDAO;
 import exception.ResponseException;
 import model.AuthData;
 import model.UserData;
 import model.GameData;
 
+import model.joinColorId;
 import service.UserService;
 import spark.Request;
 import spark.Response;
@@ -21,13 +23,19 @@ public class ServerHandler {
         this.userService = userService;
     }
 
-    public Object joinGame(Request request, Response response) {
-        record joinColorId(String playerColor, Integer gameID) {}
-        joinColorId joinData = new Gson().fromJson(request.body(), joinColorId.class);
-        String authToken = request.headers("authorization");
-        GameDAO.joinGame(joinData.gameID, joinData.playerColor(), authToken);
-        response.status(200);
-        return null;
+    public Object joinGame(Request request, Response response) throws ResponseException {
+        try {
+            joinColorId joinData = new Gson().fromJson(request.body(), joinColorId.class);
+            String authToken = request.headers("authorization");
+            joinColorId joinedGame = userService.joinGame(joinData.gameID(), joinData.playerColor(), authToken);
+            if (joinedGame == null){
+                throw new ResponseException(403, "Error: already taken");
+            }
+            response.status(200);
+            return "{}";
+        } catch (JsonSyntaxException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
@@ -57,7 +65,7 @@ public class ServerHandler {
         String authToken = request.headers("authorization");
         userService.logout(authToken);
         response.status(200);
-        return new Gson().toJson(null);
+        return "{}";
     }
 
     public Object login(Request request, Response response) throws ResponseException{
@@ -78,7 +86,7 @@ public class ServerHandler {
     public Object clear(Request request, Response response) {
         try {
             userService.clear();
-            return null;
+            return "{}";
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -11,6 +11,16 @@ public class MemoryGameDAO implements GameDAO{
     final private Map<Integer, GameData> gameDataMap = new HashMap<>();
 
     @Override
+    public void updatePlayers(GameData existingGame) {
+        try {
+            gameDataMap.remove(existingGame.GameId());
+            gameDataMap.put(existingGame.GameId(), existingGame);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
     public int createGame(String gameName) {
         ChessGame game = new ChessGame();
         ChessBoard board = new ChessBoard();

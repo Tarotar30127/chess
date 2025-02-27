@@ -6,6 +6,7 @@ import exception.ResponseException;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
+import model.joinColorId;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -20,6 +21,34 @@ public class UserService {
         this.userDAO = userDAO;
         this.authDAO = authDAO;
         this.gameDAO = gameDAO;
+    }
+
+    public joinColorId joinGame(Integer gameID, String PlayerColor, String authToken) throws ResponseException {
+        if (authDAO.getAuth(authToken) != null) {
+            GameData possibleGame;
+            try {
+                possibleGame = gameDAO.getGame(gameID);
+            } catch (RuntimeException e) {
+                throw new ResponseException(500, "Error: game not found");
+            }
+            GameData possibleGame1 = new GameData(possibleGame.GameId(), authToken, possibleGame.BlackUserName(), possibleGame.game());
+            if ((possibleGame.WhiteUserName() != null) &&(PlayerColor.equals("White"))) {
+                possibleGame = possibleGame1;
+                gameDAO.updatePlayers(possibleGame);
+                return new joinColorId(PlayerColor, gameID);
+            }
+            if ((possibleGame.BlackUserName() != null) &&(PlayerColor.equals("Black"))){
+                possibleGame = possibleGame1;
+                gameDAO.updatePlayers(possibleGame);
+                return new joinColorId(PlayerColor, gameID);
+
+            }
+        }
+        else{
+            throw new ResponseException(401, "Error: unauthorized");
+        }
+        return null;
+
     }
 
 
@@ -57,7 +86,7 @@ public class UserService {
     }
 
     public void logout(String authToken) throws ResponseException {
-        if (authDAO.getAuth(authToken)) {
+        if (authDAO.getAuth(authToken) != null) {
             try {
                 authDAO.deleteAuth(authToken);
             } catch (RuntimeException e) {
@@ -71,7 +100,7 @@ public class UserService {
     }
 
     public int createGame(String gameName, String authToken) throws ResponseException {
-        if (authDAO.getAuth(authToken)){
+        if (authDAO.getAuth(authToken) != null){
             int gameid = gameDAO.createGame(gameName);
             return gameid;
         }
@@ -81,7 +110,7 @@ public class UserService {
     }
 
     public Collection<GameData> getGame(String authToken) throws ResponseException {
-        if (authDAO.getAuth(authToken)){
+        if (authDAO.getAuth(authToken) != null){
             return gameDAO.listgames();
         }
         else{
