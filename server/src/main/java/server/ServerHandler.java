@@ -1,48 +1,60 @@
 package server;
 
 import com.google.gson.Gson;
-import dataaccess.DataAccessException;
+import exception.ResponseException;
 import model.AuthData;
 import model.UserData;
-import service.GameService;
+
 import service.UserService;
 import spark.Request;
 import spark.Response;
 
-import java.util.Map;
-
 public class ServerHandler {
-    UserService userService;
-    GameService gameService;
+    private final UserService userService;
 
-    public ServerHandler(UserService userService, GameService gameService){
-        this.gameService = gameService;
+
+    public ServerHandler(UserService userService){
         this.userService = userService;
     }
 
-    public static Object joinGame(Request request, Response response) {
-    }
-
-    static Object createGame(Request request, Response response) {
-    }
-
-    static Object getGames(Request request, Response response) {
-    }
-
-    public static Object logoutUser(Request request, Response response) {
-    }
-
-    public static Object login(Request request, Response response) {
+    public Object joinGame(Request request, Response response) {
 
     }
 
+    public Object createGame(Request request, Response response) {
+        String gameName = request.params(":gameName");
+        String authToken = request.headers("authToken");
+        int gameID = userService.createGame(gameName, authToken);
+        return new Gson().toJson(gameID);
 
-    public static Object register(Request req, Response res) throws DataAccessException {
-        UserData user = new Gson().fromJson(req.body(), UserData.class);
-        AuthData userAuthData = UserService.registerUser(user);
-        res.status(200);
+
+    }
+
+    public Object getGames(Request request, Response response) {
+
+    }
+
+    public Object logoutUser(Request request, Response response) throws ResponseException {
+        String authToken = request.headers("authToken");
+        userService.logout(authToken);
+        response.status(200);
+        return null;
+    }
+
+    public Object login(Request request, Response response) throws ResponseException{
+        UserData UserName = new Gson().fromJson(request.body(), UserData.class);
+        AuthData userAuthData = userService.loginUser(UserName);
+        response.status(200);
         return new Gson().toJson(userAuthData);
-
     }
+
+
+    public Object register(Request req, Response response) throws ResponseException {
+        UserData user = new Gson().fromJson(req.body(), UserData.class);
+        AuthData userAuthData = userService.registerUser(user);
+        response.status(200);
+        return new Gson().toJson(userAuthData);
+    }
+
 
 }

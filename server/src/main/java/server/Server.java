@@ -1,12 +1,17 @@
 package server;
 
-import dataaccess.DataAccessException;
+import dataaccess.AuthDAO;
 
+import dataaccess.GameDAO;
+import dataaccess.UserDAO;
 import spark.*;
-import java.util.UUID;
 
 public class Server {
+    UserDAO userDAO;
+    AuthDAO authDAO;
+    GameDAO gameDAO;
 
+    static ServerHandler serverHandler;
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
@@ -15,17 +20,17 @@ public class Server {
 
         // Register your endpoints and handle exceptions here.
         // Register new user
-        Spark.post("/user", ServerHandler::register);
+        Spark.post("/user", serverHandler::register);
         // Login user
-        Spark.post("/session", ServerHandler::login);
+        Spark.post("/session", serverHandler::login);
         //Logout user
-        Spark.delete("/session", ServerHandler::logoutUser);
+        Spark.delete("/session", serverHandler::logoutUser);
         // List Games
-        Spark.get("/game", ServerHandler::getGames);
+        Spark.get("/game", serverHandler::getGames);
         // Create game
-        Spark.post("/game", ServerHandler::createGame);
+        Spark.post("/game", serverHandler::createGame);
         // join game
-        Spark.put("/game", ServerHandler::joinGame);
+        Spark.put("/game", serverHandler::joinGame);
 
 
 
@@ -39,9 +44,7 @@ public class Server {
 
     
 
-    public static String generateToken() {
-        return UUID.randomUUID().toString();
-    }
+
     public void stop() {
         Spark.stop();
         Spark.awaitStop();

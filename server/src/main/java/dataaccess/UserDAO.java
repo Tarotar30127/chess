@@ -1,10 +1,15 @@
 package dataaccess;
 
 import model.UserData;
+import exception.ResponseException;
+
+import java.util.Collection;
 
 public interface UserDAO {
-    static void createUser(UserData userData);
-    void getUser(String userName);
-    void clear();
+
+    UserData createUser(UserData userData) throws ResponseException;
+    public Collection<UserData> listUsers() throws ResponseException;
+    UserData getUser(String userName) throws ResponseException;
+    void clear() throws ResponseException;
 
 }
