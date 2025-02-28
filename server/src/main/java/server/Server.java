@@ -4,6 +4,7 @@ import dataaccess.AuthDAO;
 
 import dataaccess.GameDAO;
 import dataaccess.UserDAO;
+import exception.ResponseException;
 import service.UserService;
 import spark.*;
 
@@ -43,7 +44,8 @@ public class Server {
         // clear app
         Spark.delete("/db", serverHandler::clear);
 
-
+        //Spark Exception
+        Spark.exception(ResponseException.class, this::exceptionHandler);
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
@@ -53,8 +55,12 @@ public class Server {
     }
 
 
-    
 
+
+    private void exceptionHandler(ResponseException ex, Request req, Response res) {
+        res.status(ex.StatusCode());
+        res.body(ex.toJson());
+    }
 
     public void stop() {
         Spark.stop();
