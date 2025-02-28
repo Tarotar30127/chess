@@ -1,5 +1,6 @@
 package dataaccess;
 
+import exception.ResponseException;
 import model.UserData;
 
 import java.util.Collection;
@@ -10,7 +11,10 @@ public class MemoryUserDAO implements UserDAO{
     final private Map<String, UserData> userDataMap = new HashMap<>();
     
     @Override
-    public UserData createUser(UserData userData) {
+    public UserData createUser(UserData userData) throws ResponseException {
+        if (userDataMap.containsKey(userData.username())) {
+            throw new ResponseException(403, "Error: already taken");
+        }
         userDataMap.put(userData.username(), userData);
         return userData;
     }

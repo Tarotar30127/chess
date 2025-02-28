@@ -62,7 +62,7 @@ public class UserService {
     }
 
 
-    public AuthData loginUser(UserData user) {
+    public AuthData loginUser(UserData user) throws ResponseException {
         UserData retrivedUser;
         try {
             retrivedUser = userDAO.getUser(user.username());
@@ -111,6 +111,9 @@ public class UserService {
 
     public int createGame(String gameName, String authToken) throws ResponseException {
         if (authDAO.getAuth(authToken) != null){
+            if (gameName.isEmpty()){
+                throw new ResponseException(400, "Error: bad request");
+            }
             int gameid = gameDAO.createGame(gameName);
             return gameid;
         }
