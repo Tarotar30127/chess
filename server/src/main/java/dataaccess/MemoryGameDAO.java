@@ -1,5 +1,4 @@
 package dataaccess;
-import chess.ChessBoard;
 import chess.ChessGame;
 import model.GameData;
 import java.util.Collection;
@@ -7,14 +6,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MemoryGameDAO implements GameDAO{
-    private int nextId = 0000;
+    private int nextId = 1111;
     final private Map<Integer, GameData> gameDataMap = new HashMap<>();
 
     @Override
     public void updatePlayers(GameData existingGame) {
         try {
-            gameDataMap.remove(existingGame.GameId());
-            gameDataMap.put(existingGame.GameId(), existingGame);
+            gameDataMap.remove(existingGame.gameId());
+            gameDataMap.put(existingGame.gameId(), existingGame);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -23,10 +22,8 @@ public class MemoryGameDAO implements GameDAO{
     @Override
     public int createGame(String gameName) {
         ChessGame game = new ChessGame();
-        ChessBoard board = new ChessBoard();
-        board.resetBoard();
-        game.setBoard(board);
-        GameData newGame = new GameData(nextId++, null, null, game);
+        nextId++;
+        GameData newGame = new GameData(nextId, null, null, gameName,game);
         gameDataMap.put(nextId, newGame);
         return nextId;
     }

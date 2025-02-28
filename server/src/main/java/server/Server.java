@@ -1,9 +1,7 @@
 package server;
 
-import dataaccess.AuthDAO;
+import dataaccess.*;
 
-import dataaccess.GameDAO;
-import dataaccess.UserDAO;
 import exception.ResponseException;
 import service.UserService;
 import spark.*;
@@ -15,10 +13,10 @@ public class Server {
 
     static ServerHandler serverHandler;
 
-    public Server(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO) {
-        this.userDAO = userDAO;
-        this.authDAO = authDAO;
-        this.gameDAO = gameDAO;
+    public Server() {
+        this.userDAO = new MemoryUserDAO();
+        this.authDAO = new MemoryAuthDAO();
+        this.gameDAO = new MemoryGameDAO();
         UserService userService = new UserService(userDAO, authDAO, gameDAO);
         serverHandler = new ServerHandler(userService);
     }
