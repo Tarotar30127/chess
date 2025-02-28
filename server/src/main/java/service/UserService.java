@@ -8,6 +8,7 @@ import model.GameData;
 import model.UserData;
 import model.joinColorId;
 
+import javax.management.BadAttributeValueExpException;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.UUID;
@@ -25,24 +26,34 @@ public class UserService {
     }
 
     public joinColorId joinGame(Integer gameID, String PlayerColor, String authToken) throws ResponseException {
-        if (authDAO.getAuth(authToken) != null) {
+        AuthData auth = authDAO.getAuth(authToken);
+        if (auth != null) {
             GameData possibleGame;
             try {
                 possibleGame = gameDAO.getGame(gameID);
             } catch (RuntimeException e) {
-                throw new ResponseException(500, "Error: game not found");
+                throw new ResponseException(400, "Error: bad request");
             }
-            GameData updatedGame;
-            if ("White".equals(PlayerColor)) {
-                updatedGame = new GameData(possibleGame.GameId(), authToken, possibleGame.BlackUserName(), possibleGame.game());
+            String userName = auth.username();
+            String WhitePlayer = possibleGame.WhiteUserName();
+            String BlackPlayer = possibleGame.BlackUserName();
+            if (PlayerColor==null){
+                throw new ResponseException(400, "Error: bad request");
             }
-            else {
-                updatedGame = new GameData(possibleGame.GameId(), possibleGame.WhiteUserName(), authToken, possibleGame.game());
+            if (PlayerColor.equals("WHITE")) {
+                if (WhitePlayer != null && !WhitePlayer.equals(userName)) {
+                    return null;
+                }
+                WhitePlayer = userName;
             }
-
-            gameDAO.updatePlayers(updatedGame);
+            if (PlayerColor.equals("BLACK")) {
+                if (WhitePlayer != null && !BlackPlayer.equals(userName)) {
+                    return null;
+                }
+                BlackPlayer = userName;
+            }
+            gameDAO.updatePlayers(new GameData(possibleGame.GameId(), WhitePlayer, BlackPlayer, possibleGame.game()));
             return new joinColorId(PlayerColor, gameID);
-
         }
         else{
             throw new ResponseException(401, "Error: unauthorized");

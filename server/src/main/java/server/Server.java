@@ -54,9 +54,6 @@ public class Server {
         return Spark.port();
     }
 
-
-
-
     private void exceptionHandler(ResponseException ex, Request req, Response res) {
         res.status(ex.StatusCode());
         res.body(ex.toJson());

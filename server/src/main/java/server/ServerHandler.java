@@ -34,7 +34,7 @@ public class ServerHandler {
             response.status(200);
             return "{}";
         } catch (JsonSyntaxException e) {
-            throw new RuntimeException(e);
+            throw new ResponseException(500, "unable to create");
         }
 
     }
