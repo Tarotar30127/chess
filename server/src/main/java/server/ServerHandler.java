@@ -1,32 +1,30 @@
 package server;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import exception.ResponseException;
-import model.AuthData;
-import model.UserData;
-import model.GameData;
+import model.*;
 
-import model.joinColorId;
-import service.UserService;
+import service.service;
 import spark.Request;
 import spark.Response;
 
-import java.util.Collection;
-import java.util.Objects;
+import java.util.*;
 
 public class ServerHandler {
-    private final UserService userService;
+    private final service userService;
 
 
-    public ServerHandler(UserService userService){
-        this.userService = userService;
+    public ServerHandler(service service){
+        this.userService = service;
     }
 
     public Object joinGame(Request request, Response response) throws ResponseException {
         try {
             joinColorId joinData = new Gson().fromJson(request.body(), joinColorId.class);
-            if (joinData.gameID()==null || joinData.playerColor().isEmpty()){
+            if (joinData.gameID() == null || joinData.playerColor() == null || joinData.playerColor().isEmpty() || !(joinData.playerColor().equals("WHITE")) && !(joinData.playerColor().equals("BLACK"))) {
                 throw new ResponseException(400, "Error: bad request");
             }
             String authToken = request.headers("authorization");
@@ -48,23 +46,38 @@ public class ServerHandler {
         if (gameName == null) {
             throw new ResponseException(400, "Error: bad request");
         }
-        int gameID = userService.createGame(gameName, authToken);
+        JsonObject jsonGameName = JsonParser.parseString(gameName).getAsJsonObject();
+        String justGameName = jsonGameName.get("gameName").getAsString();
+        int gameId = userService.createGame(justGameName, authToken);
         response.status(200);
-        return new Gson().toJson(gameID);
+        return getJsonGameID(gameId);
+    }
 
-
+    private static String getJsonGameID(int gameID) {
+        record JsonGameID(int gameID) {}
+        return new Gson().toJson(new JsonGameID(gameID));
     }
 
     public Object getGames(Request request, Response response) throws ResponseException{
         try {
             String authToken = request.headers("authorization");
             Collection<GameData> games = userService.getGame(authToken);
+            Collection<GamesList> gamesList = getJsonGames(games);
             response.status(200);
-            return new Gson().toJson(games);
+            Map<String, Object> formatedGameList = new HashMap<>();
+            formatedGameList.put("games", gamesList);
+            return new Gson().toJson(formatedGameList);
         } catch (Exception e) {
             throw new ResponseException(401, "Error: unauthorized");
         }
-
+    }
+    private static Collection<GamesList> getJsonGames(Collection<GameData> games) {
+        ArrayList<GamesList> gamesList = new ArrayList<>();
+        for (GameData game: games){
+            GamesList gameList = new GamesList(game.gameId(), game.whiteUserName(), game.blackUserName(), game.gameName());
+            gamesList.add(gameList);
+        }
+        return gamesList;
     }
 
     public Object logoutUser(Request request, Response response) throws ResponseException {
@@ -84,7 +97,7 @@ public class ServerHandler {
 
     public Object register(Request req, Response response) throws ResponseException {
         UserData user = new Gson().fromJson(req.body(), UserData.class);
-        if (user.username().isEmpty() || user.password().isEmpty() || user.email().isEmpty()) {
+        if (user.username()==null || user.password()==null || user.email()==null) {
             throw new ResponseException(400, "Error: bad request");
         }
         AuthData userAuthData = userService.registerUser(user);

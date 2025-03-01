@@ -3,7 +3,7 @@ package server;
 import dataaccess.*;
 
 import exception.ResponseException;
-import service.UserService;
+import service.service;
 import spark.*;
 
 public class Server {
@@ -17,8 +17,8 @@ public class Server {
         this.userDAO = new MemoryUserDAO();
         this.authDAO = new MemoryAuthDAO();
         this.gameDAO = new MemoryGameDAO();
-        UserService userService = new UserService(userDAO, authDAO, gameDAO);
-        serverHandler = new ServerHandler(userService);
+        service service = new service(userDAO, authDAO, gameDAO);
+        serverHandler = new ServerHandler(service);
     }
 
     public int run(int desiredPort) {

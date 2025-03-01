@@ -7,19 +7,16 @@ import model.AuthData;
 import model.GameData;
 import model.UserData;
 import model.joinColorId;
-
-import javax.management.BadAttributeValueExpException;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.UUID;
 
+public class service {
+    private UserDAO userDAO;
+    private AuthDAO authDAO;
+    private GameDAO gameDAO;
 
-public class UserService {
-    private final UserDAO userDAO;
-    private final AuthDAO authDAO;
-    private final GameDAO gameDAO;
-
-    public UserService(UserDAO userDAO,  AuthDAO authDAO, GameDAO gameDAO){
+    public service(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO){
         this.userDAO = userDAO;
         this.authDAO = authDAO;
         this.gameDAO = gameDAO;
@@ -35,8 +32,8 @@ public class UserService {
                 throw new ResponseException(400, "Error: bad request");
             }
             String userName = auth.username();
-            String WhitePlayer = possibleGame.WhiteUserName();
-            String BlackPlayer = possibleGame.BlackUserName();
+            String WhitePlayer = possibleGame.whiteUserName();
+            String BlackPlayer = possibleGame.blackUserName();
             if (PlayerColor==null){
                 throw new ResponseException(400, "Error: bad request");
             }
@@ -47,12 +44,12 @@ public class UserService {
                 WhitePlayer = userName;
             }
             if (PlayerColor.equals("BLACK")) {
-                if (WhitePlayer != null && !BlackPlayer.equals(userName)) {
+                if (BlackPlayer != null && !BlackPlayer.equals(userName)) {
                     return null;
                 }
                 BlackPlayer = userName;
             }
-            gameDAO.updatePlayers(new GameData(possibleGame.GameId(), WhitePlayer, BlackPlayer, possibleGame.game()));
+            gameDAO.updatePlayers(new GameData(possibleGame.gameId(), WhitePlayer, BlackPlayer, possibleGame.gameName(), possibleGame.game()));
             return new joinColorId(PlayerColor, gameID);
         }
         else{
@@ -66,8 +63,13 @@ public class UserService {
         UserData retrivedUser;
         try {
             retrivedUser = userDAO.getUser(user.username());
+            if (retrivedUser != null) {
+                if (!Objects.equals(retrivedUser.password(), user.password())) {
+                    retrivedUser = null;
+                }
+            }
         } catch (ResponseException e) {
-            throw new RuntimeException(e);
+            throw new ResponseException(401, "Error: unauthorized");
         }
         if (retrivedUser != null) {
             String AuthToken = generateToken();
@@ -75,7 +77,7 @@ public class UserService {
             authDAO.addAuth(authData);
             return authData;
         }
-        return null;
+        throw new ResponseException(401, "Error: unauthorized");
 
     }
 
@@ -143,7 +145,7 @@ public class UserService {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof UserService that)) {
+        if (!(o instanceof service that)) {
             return false;
         }
         return Objects.equals(userDAO, that.userDAO) && Objects.equals(authDAO, that.authDAO) && Objects.equals(gameDAO, that.gameDAO);
