@@ -54,6 +54,10 @@ public class ServiceTest {
         UserData newUser = new UserData("tako", "legend", "@hotemail");
         AuthData  authData = service.registerUser(newUser);
         assertDoesNotThrow(() -> {service.logout(authData.authToken());});
+        ResponseException exception = Assertions.assertThrows(ResponseException.class, () -> {
+            service.getGame(authData.authToken());
+        });
+        Assertions.assertEquals("Error: unauthorized", exception.getMessage());
     }
     @Test
     @DisplayName("logout Fail Unauthorized")
@@ -90,7 +94,8 @@ public class ServiceTest {
     public void createGamePass() throws ResponseException {
         UserData newUser = new UserData("tako", "legend", "@hotemail");
         AuthData authData = service.registerUser(newUser);
-        assertDoesNotThrow(() -> {service.createGame("newGame",authData.authToken());});
+        int gameId = service.createGame("newGame",authData.authToken());
+        Assertions.assertTrue(gameId>0, "should be an integer bigger than 0");
     }
     @Test
     @DisplayName("Login Fail Unauthorized")
@@ -153,7 +158,10 @@ public class ServiceTest {
         service.createGame("newGame", authData.authToken());
         service.createGame("new", authData.authToken());
         service.createGame("n", authData.authToken());
-        assertDoesNotThrow(() -> {Collection<GameData> games = service.getGame(authData.authToken());});
+        Collection<GameData> games = service.getGame(authData.authToken());
+        Assertions.assertFalse(games.isEmpty(), "Game list should not be empty");
+        Assertions.assertTrue(games.stream().allMatch(game -> game instanceof GameData),
+                "Should be a Collection of GameData");
     }
     @Test
     @DisplayName("Game List Fail Unauthorized")
@@ -177,8 +185,13 @@ public class ServiceTest {
         service.createGame("newGame", authData.authToken());
         service.createGame("new", authData.authToken());
         service.createGame("n", authData.authToken());
-        assertDoesNotThrow(() -> {service.clear();});
-
+        Collection<GameData> gamesBeforeClear = service.getGame(authData.authToken());
+        Assertions.assertFalse(gamesBeforeClear.isEmpty());
+        service.clear();
+        ResponseException exception = Assertions.assertThrows(ResponseException.class, () -> {
+            Collection<GameData> gamesAfterClear = service.getGame(authData.authToken());
+        });
+        Assertions.assertEquals("Error: unauthorized", exception.getMessage());
 
 
     }
