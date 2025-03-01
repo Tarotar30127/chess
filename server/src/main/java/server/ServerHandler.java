@@ -7,30 +7,30 @@ import com.google.gson.JsonSyntaxException;
 import exception.ResponseException;
 import model.*;
 
-import service.service;
+import service.Service;
 import spark.Request;
 import spark.Response;
 
 import java.util.*;
 
 public class ServerHandler {
-    private final service userService;
+    private final Service userService;
 
 
-    public ServerHandler(service service){
+    public ServerHandler(Service service){
         this.userService = service;
     }
 
     public Object joinGame(Request request, Response response) throws ResponseException {
         try {
-            joinColorId joinData = new Gson().fromJson(request.body(), joinColorId.class);
+            JoinColorId joinData = new Gson().fromJson(request.body(), JoinColorId.class);
             if (joinData.gameID() == null
                     || joinData.playerColor() == null || joinData.playerColor().isEmpty() ||
                     !(joinData.playerColor().equals("WHITE")) && !(joinData.playerColor().equals("BLACK"))) {
                 throw new ResponseException(400, "Error: bad request");
             }
             String authToken = request.headers("authorization");
-            joinColorId joinedGame = userService.joinGame(joinData.gameID(), joinData.playerColor(), authToken);
+            JoinColorId joinedGame = userService.joinGame(joinData.gameID(), joinData.playerColor(), authToken);
             if (joinedGame == null){
                 throw new ResponseException(403, "Error: already taken");
             }
@@ -90,8 +90,8 @@ public class ServerHandler {
     }
 
     public Object login(Request request, Response response) throws ResponseException{
-        UserData UserName = new Gson().fromJson(request.body(), UserData.class);
-        AuthData userAuthData = userService.loginUser(UserName);
+        UserData userData = new Gson().fromJson(request.body(), UserData.class);
+        AuthData userAuthData = userService.loginUser(userData);
         response.status(200);
         return new Gson().toJson(userAuthData);
     }

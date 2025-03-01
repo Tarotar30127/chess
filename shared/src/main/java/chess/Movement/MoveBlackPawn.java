@@ -7,7 +7,7 @@ import chess.ChessPosition;
 
 import java.util.Collection;
 
-public class MoveBlackPawn extends movePawn {
+public class MoveBlackPawn extends MovePawn {
     @Override
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         int[][] movement = { { -1, 0 }, { -1, -1 }, { -1, 1 } };

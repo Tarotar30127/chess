@@ -6,7 +6,7 @@ import chess.ChessPosition;
 
 import java.util.Collection;
 
-public class MoveQueen extends moveTilEdge {
+public class MoveQueen extends MoveTilEdge {
     @Override
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         int [][] queenMovement = {{1,1},{-1,1},{1,-1},{-1,-1},{0,1},{0,-1},{1,0},{-1,0}};

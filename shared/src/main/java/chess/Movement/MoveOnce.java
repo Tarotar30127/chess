@@ -5,7 +5,7 @@ import chess.*;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public abstract class moveOnce implements MovementCalculator {
+public abstract class MoveOnce implements MovementCalculator {
     public Collection<ChessMove> moveOneSpot(ChessBoard board, ChessPosition myPosition, int[][] movement){
         int row = myPosition.getRow();
         int col = myPosition.getColumn();

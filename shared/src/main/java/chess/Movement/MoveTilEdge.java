@@ -4,7 +4,7 @@ import chess.*;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public abstract class moveTilEdge implements MovementCalculator {
+public abstract class MoveTilEdge implements MovementCalculator {
     public Collection<ChessMove> moveEdge(ChessBoard board, ChessPosition myPosition, int[][] movement) {
         int row = myPosition.getRow();
         int col = myPosition.getColumn();

@@ -7,7 +7,7 @@ import chess.ChessPosition;
 
 import java.util.Collection;
 
-public class MoveBishop extends moveTilEdge {
+public class MoveBishop extends MoveTilEdge {
     @Override
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition){
         int[][] bishopMovement = {{1, 1}, {-1, 1}, {-1, -1}, {1, -1}};

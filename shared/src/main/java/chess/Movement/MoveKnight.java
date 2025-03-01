@@ -8,7 +8,7 @@ import chess.ChessPosition;
 import java.util.Collection;
 
 
-public class MoveKnight extends moveOnce {
+public class MoveKnight extends MoveOnce {
     @Override
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         int [][] knightMovement = {{2,1},{2,-1},{-2,-1},{-2,1},{1,2},{1,-2},{-1,-2},{-1,2}};

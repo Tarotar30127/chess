@@ -6,23 +6,23 @@ import exception.ResponseException;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
-import model.joinColorId;
+import model.JoinColorId;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.UUID;
 
-public class service {
+public class Service {
     private UserDAO userDAO;
     private AuthDAO authDAO;
     private GameDAO gameDAO;
 
-    public service(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO){
+    public Service(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO){
         this.userDAO = userDAO;
         this.authDAO = authDAO;
         this.gameDAO = gameDAO;
     }
 
-    public joinColorId joinGame(Integer gameID, String PlayerColor, String authToken) throws ResponseException {
+    public JoinColorId joinGame(Integer gameID, String playerColor, String authToken) throws ResponseException {
         AuthData auth = authDAO.getAuth(authToken);
         if (auth != null) {
             GameData possibleGame;
@@ -32,25 +32,25 @@ public class service {
                 throw new ResponseException(400, "Error: bad request");
             }
             String userName = auth.username();
-            String WhitePlayer = possibleGame.whiteUserName();
-            String BlackPlayer = possibleGame.blackUserName();
-            if (PlayerColor==null){
+            String whitePlayer = possibleGame.whiteUserName();
+            String blackPlayer = possibleGame.blackUserName();
+            if (playerColor ==null){
                 throw new ResponseException(400, "Error: bad request");
             }
-            if (PlayerColor.equals("WHITE")) {
-                if (WhitePlayer != null && !WhitePlayer.equals(userName)) {
+            if (playerColor.equals("WHITE")) {
+                if (whitePlayer != null && !whitePlayer.equals(userName)) {
                     return null;
                 }
-                WhitePlayer = userName;
+                whitePlayer = userName;
             }
-            if (PlayerColor.equals("BLACK")) {
-                if (BlackPlayer != null && !BlackPlayer.equals(userName)) {
+            if (playerColor.equals("BLACK")) {
+                if (blackPlayer != null && !blackPlayer.equals(userName)) {
                     return null;
                 }
-                BlackPlayer = userName;
+                blackPlayer = userName;
             }
-            gameDAO.updatePlayers(new GameData(possibleGame.gameId(), WhitePlayer, BlackPlayer, possibleGame.gameName(), possibleGame.game()));
-            return new joinColorId(PlayerColor, gameID);
+            gameDAO.updatePlayers(new GameData(possibleGame.gameId(), whitePlayer, blackPlayer, possibleGame.gameName(), possibleGame.game()));
+            return new JoinColorId(playerColor, gameID);
         }
         else{
             throw new ResponseException(401, "Error: unauthorized");
@@ -72,8 +72,8 @@ public class service {
             throw new ResponseException(401, "Error: unauthorized");
         }
         if (retrivedUser != null) {
-            String AuthToken = generateToken();
-            AuthData authData = new AuthData(AuthToken, user.username());
+            String generateToken = generateToken();
+            AuthData authData = new AuthData(generateToken, user.username());
             authDAO.addAuth(authData);
             return authData;
         }
@@ -87,8 +87,8 @@ public class service {
         } catch (ResponseException e) {
             throw new ResponseException(403, "Error: already taken");
         }
-        String AuthToken = generateToken();
-        AuthData authData = new AuthData(AuthToken, user.username());
+        String generateToken = generateToken();
+        AuthData authData = new AuthData(generateToken, user.username());
         authDAO.addAuth(authData);
         return authData;
     }
@@ -145,7 +145,7 @@ public class service {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof service that)) {
+        if (!(o instanceof Service that)) {
             return false;
         }
         return Objects.equals(userDAO, that.userDAO) && Objects.equals(authDAO, that.authDAO) && Objects.equals(gameDAO, that.gameDAO);

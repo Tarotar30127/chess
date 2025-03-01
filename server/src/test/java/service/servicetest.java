@@ -4,7 +4,7 @@ import exception.ResponseException;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
-import model.joinColorId;
+import model.JoinColorId;
 import org.junit.jupiter.api.*;
 
 import java.util.Collection;
@@ -12,7 +12,7 @@ import java.util.Collection;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 public class servicetest {
-    private static service service;
+    private static Service service;
     private static UserDAO userDAO;
     private static AuthDAO authDAO;
     private static GameDAO gameDAO;
@@ -23,7 +23,7 @@ public class servicetest {
         userDAO = new MemoryUserDAO();
         authDAO = new MemoryAuthDAO();
         gameDAO = new MemoryGameDAO();
-        service = new service(userDAO, authDAO, gameDAO);
+        service = new Service(userDAO, authDAO, gameDAO);
     }
     @BeforeEach
     public void cleanSlate() throws ResponseException {
@@ -77,11 +77,11 @@ public class servicetest {
     @DisplayName("Login Fail Unauthorized")
     public void loginFailUnauthorized() throws ResponseException {
         UserData oldUser = new UserData("tako", "legend", "@hotemail");
-        UserData User = new UserData("tako", "leg", "@hotemail");
+        UserData userData = new UserData("tako", "leg", "@hotemail");
         AuthData  authData = service.registerUser(oldUser);
         service.logout(authData.authToken());
         ResponseException exception = Assertions.assertThrows(ResponseException.class, () -> {
-            service.loginUser(User);
+            service.loginUser(userData);
         });
         Assertions.assertEquals("Error: unauthorized", exception.getMessage());
     }
@@ -118,8 +118,8 @@ public class servicetest {
         UserData newUser = new UserData("tako", "legend", "@hotemail");
         AuthData authData = service.registerUser(newUser);
         int gameID = service.createGame("newGame",authData.authToken());
-        joinColorId newGame = service.joinGame(gameID, "WHITE", authData.authToken());
-        Assertions.assertEquals(newGame, new joinColorId("WHITE", gameID));
+        JoinColorId newGame = service.joinGame(gameID, "WHITE", authData.authToken());
+        Assertions.assertEquals(newGame, new JoinColorId("WHITE", gameID));
     }
     @Test
     @DisplayName("Join Game Fail Unauthorized")
@@ -127,7 +127,7 @@ public class servicetest {
         UserData newUser = new UserData("tako", "legend", "@hotemail");
         AuthData authData = service.registerUser(newUser);
         int gameID = service.createGame("newGame",authData.authToken());
-        joinColorId newGame = service.joinGame(gameID, "WHITE", authData.authToken());
+        JoinColorId newGame = service.joinGame(gameID, "WHITE", authData.authToken());
         ResponseException exception = Assertions.assertThrows(ResponseException.class, () -> {
             service.joinGame(gameID, "WHITE", null);
         });
@@ -139,7 +139,7 @@ public class servicetest {
         UserData newUser = new UserData("tako", "legend", "@hotemail");
         AuthData authData = service.registerUser(newUser);
         int gameID = service.createGame("newGame",authData.authToken());
-        joinColorId newGame = service.joinGame(gameID, "WHITE", authData.authToken());
+        JoinColorId newGame = service.joinGame(gameID, "WHITE", authData.authToken());
         ResponseException exception = Assertions.assertThrows(ResponseException.class, () -> {
             service.joinGame(gameID, null, authData.authToken());
         });
@@ -161,7 +161,7 @@ public class servicetest {
         UserData newUser = new UserData("tako", "legend", "@hotemail");
         AuthData authData = service.registerUser(newUser);
         int gameID = service.createGame("newGame",authData.authToken());
-        joinColorId newGame = service.joinGame(gameID, "WHITE", authData.authToken());
+        JoinColorId newGame = service.joinGame(gameID, "WHITE", authData.authToken());
         ResponseException exception = Assertions.assertThrows(ResponseException.class, () -> {
             service.getGame(null);
         });
@@ -173,7 +173,7 @@ public class servicetest {
         UserData newUser = new UserData("tako", "legend", "@hotemail");
         AuthData authData = service.registerUser(newUser);
         int gameID = service.createGame("newGame",authData.authToken());
-        joinColorId newGame = service.joinGame(gameID, "WHITE", authData.authToken());
+        JoinColorId newGame = service.joinGame(gameID, "WHITE", authData.authToken());
         service.createGame("newGame", authData.authToken());
         service.createGame("new", authData.authToken());
         service.createGame("n", authData.authToken());

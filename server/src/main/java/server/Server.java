@@ -3,7 +3,7 @@ package server;
 import dataaccess.*;
 
 import exception.ResponseException;
-import service.service;
+import service.Service;
 import spark.*;
 
 public class Server {
@@ -17,7 +17,7 @@ public class Server {
         this.userDAO = new MemoryUserDAO();
         this.authDAO = new MemoryAuthDAO();
         this.gameDAO = new MemoryGameDAO();
-        service service = new service(userDAO, authDAO, gameDAO);
+        Service service = new Service(userDAO, authDAO, gameDAO);
         serverHandler = new ServerHandler(service);
     }
 
@@ -53,7 +53,7 @@ public class Server {
     }
 
     private void exceptionHandler(ResponseException ex, Request req, Response res) {
-        res.status(ex.StatusCode());
+        res.status(ex.statusCode());
         res.body(ex.toJson());
     }
 

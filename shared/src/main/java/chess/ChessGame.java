@@ -174,23 +174,16 @@ public class ChessGame {
                 ChessPosition focus = new ChessPosition(row, col);
                 ChessPiece enemyPiece = board.getPiece(focus);
                 if ((enemyPiece != null)&&(enemyPiece.getTeamColor() != teamColor)){
-                    if (extracted(enemyPiece, focus, king)) {
-                        return true;
+                    Collection<ChessMove> enemyMoves = enemyPiece.pieceMoves(board, focus);
+                    for (ChessMove move: enemyMoves){
+                        if (move.getEndPosition().equals(king)){
+                            return true;
+                        }
                     }
                 }
             }
         }
 
-        return false;
-    }
-
-    private boolean extracted(ChessPiece enemyPiece, ChessPosition focus, ChessPosition king) {
-        Collection<ChessMove> enemyMoves = enemyPiece.pieceMoves(board, focus);
-        for (ChessMove move: enemyMoves){
-            if (move.getEndPosition().equals(king)){
-                return true;
-            }
-        }
         return false;
     }
 
