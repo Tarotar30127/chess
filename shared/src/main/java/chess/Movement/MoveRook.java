@@ -1,9 +1,12 @@
-package chess;
+package chess.Movement;
 
-import java.util.ArrayList;
+import chess.ChessBoard;
+import chess.ChessMove;
+import chess.ChessPosition;
+
 import java.util.Collection;
 
-public class MoveRook extends moveTilEdge{
+public class MoveRook extends moveTilEdge {
     @Override
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         int [][] rookMovement = {{0,1},{0,-1},{1,0},{-1,0}};
