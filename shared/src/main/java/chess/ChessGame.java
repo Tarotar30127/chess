@@ -173,13 +173,8 @@ public class ChessGame {
             for (int col = 1; col < 9; col++){
                 ChessPosition focus = new ChessPosition(row, col);
                 ChessPiece enemyPiece = board.getPiece(focus);
-                if ((enemyPiece != null)&&(enemyPiece.getTeamColor() != teamColor)){
-                    Collection<ChessMove> enemyMoves = enemyPiece.pieceMoves(board, focus);
-                    for (ChessMove move: enemyMoves){
-                        if (move.getEndPosition().equals(king)){
-                            return true;
-                        }
-                    }
+                if (extracted(teamColor, enemyPiece, focus, king)) {
+                    return true;
                 }
             }
         }
