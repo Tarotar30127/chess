@@ -1,5 +1,4 @@
-package chess.Movement;
-
+package chess.movement;
 
 import chess.ChessBoard;
 import chess.ChessMove;
@@ -7,10 +6,10 @@ import chess.ChessPosition;
 
 import java.util.Collection;
 
-public class MoveBlackPawn extends MovePawn {
+public class MoveKing extends MoveOnce {
     @Override
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        int[][] movement = { { -1, 0 }, { -1, -1 }, { -1, 1 } };
-        return moveOneSpace(board, myPosition, movement, 7, 5, 1);
+        int [][] kingMovement = {{1,1},{-1,1},{1,-1},{-1,-1},{0,1},{0,-1},{1,0},{-1,0}};
+        return super.moveOneSpot(board, myPosition, kingMovement);
     }
 }

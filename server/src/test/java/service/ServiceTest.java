@@ -11,7 +11,7 @@ import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-public class servicetest {
+public class ServiceTest {
     private static Service service;
     private static UserDAO userDAO;
     private static AuthDAO authDAO;

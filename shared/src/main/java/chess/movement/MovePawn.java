@@ -1,4 +1,4 @@
-package chess.Movement;
+package chess.movement;
 import chess.*;
 
 import java.util.ArrayList;
