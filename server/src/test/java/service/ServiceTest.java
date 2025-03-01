@@ -7,6 +7,7 @@ import model.UserData;
 import model.JoinColorId;
 import org.junit.jupiter.api.*;
 
+import javax.annotation.processing.Generated;
 import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -188,12 +189,40 @@ public class ServiceTest {
         Collection<GameData> gamesBeforeClear = service.getGame(authData.authToken());
         Assertions.assertFalse(gamesBeforeClear.isEmpty());
         service.clear();
+        AuthData newAuthData = service.registerUser(newUser);
+        Collection<GameData> gamesList = service.getGame(newAuthData.authToken());
+        Assertions.assertTrue(gamesList.isEmpty(), "Game list should be empty");
+    }
+
+    @Test
+    @DisplayName("Clear All Data")
+    public void clearFail() throws ResponseException {
+        UserData newUser = new UserData("tako", "legend", "@hotemail");
+        AuthData authData = service.registerUser(newUser);
+        int gameID = service.createGame("newGame",authData.authToken());
+        JoinColorId newGame = service.joinGame(gameID, "WHITE", authData.authToken());
+        service.createGame("newGame", authData.authToken());
+        service.createGame("new", authData.authToken());
+        service.createGame("n", authData.authToken());
+        Collection<GameData> gamesBeforeClear = service.getGame(authData.authToken());
+        Assertions.assertFalse(gamesBeforeClear.isEmpty());
+        service.clear();
         ResponseException exception = Assertions.assertThrows(ResponseException.class, () -> {
             Collection<GameData> gamesAfterClear = service.getGame(authData.authToken());
         });
         Assertions.assertEquals("Error: unauthorized", exception.getMessage());
-
-
+    }
+    @Test
+    @DisplayName("Generate Token Pass")
+    public void generateTokenPass() throws ResponseException {
+        String generateToken  = service.generateToken();
+        Assertions.assertInstanceOf(String.class, generateToken, "generateToken should be a string");
+    }
+    @Test
+    @DisplayName("Register User Duplication Request")
+    public void generateTokenFail() throws ResponseException {
+        String generateToken  = service.generateToken();
+        Assertions.assertFalse(generateToken.isEmpty(), "generateToken should be a string");
     }
 
 }

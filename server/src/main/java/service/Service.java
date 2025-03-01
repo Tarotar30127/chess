@@ -16,7 +16,7 @@ public class Service {
     private AuthDAO authDAO;
     private GameDAO gameDAO;
 
-    public Service(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO){
+    public Service(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO) {
         this.userDAO = userDAO;
         this.authDAO = authDAO;
         this.gameDAO = gameDAO;
@@ -34,7 +34,7 @@ public class Service {
             String userName = auth.username();
             String whitePlayer = possibleGame.whiteUserName();
             String blackPlayer = possibleGame.blackUserName();
-            if (playerColor ==null){
+            if (playerColor == null) {
                 throw new ResponseException(400, "Error: bad request");
             }
             if (playerColor.equals("WHITE")) {
@@ -51,8 +51,7 @@ public class Service {
             }
             gameDAO.updatePlayers(new GameData(possibleGame.gameId(), whitePlayer, blackPlayer, possibleGame.gameName(), possibleGame.game()));
             return new JoinColorId(playerColor, gameID);
-        }
-        else{
+        } else {
             throw new ResponseException(401, "Error: unauthorized");
         }
 
@@ -104,36 +103,33 @@ public class Service {
             } catch (RuntimeException e) {
                 throw new ResponseException(500, "Error: unable to logout");
             }
-        }
-        else{
+        } else {
             throw new ResponseException(401, "Error: unauthorized");
         }
 
     }
 
     public int createGame(String gameName, String authToken) throws ResponseException {
-        if (authDAO.getAuth(authToken) != null){
-            if (gameName.isEmpty()){
+        if (authDAO.getAuth(authToken) != null) {
+            if (gameName.isEmpty()) {
                 throw new ResponseException(400, "Error: bad request");
             }
             int gameid = gameDAO.createGame(gameName);
             return gameid;
-        }
-        else {
+        } else {
             throw new ResponseException(401, "Error: unauthorized");
         }
     }
 
     public Collection<GameData> getGame(String authToken) throws ResponseException {
-        if (authDAO.getAuth(authToken) != null){
+        if (authDAO.getAuth(authToken) != null) {
             return gameDAO.listgames();
-        }
-        else{
+        } else {
             throw new ResponseException(401, "Error: unauthorized");
         }
     }
 
-    public void clear() throws ResponseException{
+    public void clear() throws ResponseException {
         try {
             gameDAO.clear();
             authDAO.clear();
@@ -141,18 +137,5 @@ public class Service {
         } catch (ResponseException e) {
             throw new ResponseException(500, "Error: unable to clear");
         }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof Service that)) {
-            return false;
-        }
-        return Objects.equals(userDAO, that.userDAO) && Objects.equals(authDAO, that.authDAO) && Objects.equals(gameDAO, that.gameDAO);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(userDAO, authDAO, gameDAO);
     }
 }
