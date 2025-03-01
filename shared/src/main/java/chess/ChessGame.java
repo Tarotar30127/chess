@@ -133,8 +133,10 @@ public class ChessGame {
                 board.addPiece(move.getStartPosition(), null);
 
             }
-            else board.addPiece(move.getEndPosition(), movePiece);
-            board.addPiece(move.getStartPosition(), null);
+            else {
+                board.addPiece(move.getEndPosition(), movePiece);
+                board.addPiece(move.getStartPosition(), null);
+            }
         }
         if (movePiece.getTeamColor() == TeamColor.BLACK){
             setTeamTurn(TeamColor.WHITE);

@@ -6,7 +6,9 @@ import java.util.Collection;
 
 
 public abstract class movePawn implements MovementCalculator {
-    public Collection<ChessMove> moveOneSpace(ChessBoard board, ChessPosition myPosition, int[][] movement, int startingRow, int jumpRow, int promotionRow) {
+    public Collection<ChessMove> moveOneSpace(ChessBoard board, ChessPosition myPosition,
+                                              int[][] movement, int startingRow,
+                                              int jumpRow, int promotionRow) {
         int row = myPosition.getRow();
         int col = myPosition.getColumn();
         Collection<ChessMove> moves = new ArrayList<>();
