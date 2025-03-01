@@ -187,6 +187,18 @@ public class ChessGame {
         return false;
     }
 
+    private boolean extracted(TeamColor teamColor, ChessPiece enemyPiece, ChessPosition focus, ChessPosition king) {
+        if ((enemyPiece != null)&&(enemyPiece.getTeamColor() != teamColor)){
+            Collection<ChessMove> enemyMoves = enemyPiece.pieceMoves(board, focus);
+            for (ChessMove move: enemyMoves){
+                if (move.getEndPosition().equals(king)){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Determines if the given team is in checkmate
      *
