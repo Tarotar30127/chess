@@ -105,31 +105,31 @@ public class ChessPiece implements Cloneable{
         ChessGame.TeamColor pieceColor = piece.getTeamColor();
         switch (pieceType) {
             case PieceType.KING -> {
-                moves = new MoveKing().PieceMoves(board, myPosition);
+                moves = new MoveKing().pieceMoves(board, myPosition);
                 return moves;
             }
             case PieceType.QUEEN -> {
-                moves = new MoveQueen().PieceMoves(board, myPosition);
+                moves = new MoveQueen().pieceMoves(board, myPosition);
                 return moves;
             }
             case PieceType.BISHOP -> {
-                moves = new MoveBishop().PieceMoves(board, myPosition);
+                moves = new MoveBishop().pieceMoves(board, myPosition);
                 return moves;
             }
             case PieceType.KNIGHT -> {
-                moves = new MoveKnight().PieceMoves(board, myPosition);
+                moves = new MoveKnight().pieceMoves(board, myPosition);
                 return moves;
             }
             case PieceType.ROOK -> {
-                moves = new MoveRook().PieceMoves(board, myPosition);
+                moves = new MoveRook().pieceMoves(board, myPosition);
                 return moves;
             }
             case PieceType.PAWN -> {
                 if (pieceColor == ChessGame.TeamColor.WHITE) {
-                    moves = new MoveWhitePawn().PieceMoves(board, myPosition);
+                    moves = new MoveWhitePawn().pieceMoves(board, myPosition);
                 }
                 else {
-                    moves = new MoveBlackPawn().PieceMoves(board, myPosition);
+                    moves = new MoveBlackPawn().pieceMoves(board, myPosition);
                 }
                 return moves;
             }
