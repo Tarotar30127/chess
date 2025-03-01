@@ -167,5 +167,20 @@ public class serviceTest {
         });
         Assertions.assertEquals("Error: unauthorized", exception.getMessage());
     }
+    @Test
+    @DisplayName("Clear All Data")
+    public void clear() throws ResponseException {
+        UserData newUser = new UserData("tako", "legend", "@hotemail");
+        AuthData authData = service.registerUser(newUser);
+        int gameID = service.createGame("newGame",authData.authToken());
+        joinColorId newGame = service.joinGame(gameID, "WHITE", authData.authToken());
+        service.createGame("newGame", authData.authToken());
+        service.createGame("new", authData.authToken());
+        service.createGame("n", authData.authToken());
+        assertDoesNotThrow(() -> {service.clear();});
+
+
+
+    }
 
 }
