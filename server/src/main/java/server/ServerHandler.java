@@ -115,17 +115,4 @@ public class ServerHandler {
             throw new RuntimeException(e);
         }
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof ServerHandler that)) {
-            return false;
-        }
-        return Objects.equals(userService, that.userService);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(userService);
-    }
 }

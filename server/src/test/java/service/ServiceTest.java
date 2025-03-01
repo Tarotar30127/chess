@@ -6,8 +6,6 @@ import model.GameData;
 import model.UserData;
 import model.JoinColorId;
 import org.junit.jupiter.api.*;
-
-import javax.annotation.processing.Generated;
 import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
