@@ -1,20 +1,20 @@
 package dataaccess;
 
-import com.google.gson.Gson;
 import exception.ResponseException;
 import model.UserData;
 
-import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import static java.sql.Statement.RETURN_GENERATED_KEYS;
 
 public class SQLUserDAO implements UserDAO {
     private final String[] statement = { """
-            CREATE TABLE IF NOT EXISTS  userdata (
-               `id` int NOT NULL primary key AUTO_INCREMENT,
-               `username` varchar(256) NOT NULL,
-               `password` varchar( 256 ) NOT NULL,
-               `email` varchar( 256 ) NOT NULL
-             )
+            CREATE TABLE IF NOT EXISTS userdata (
+                  `username` varchar(256) NOT NULL PRIMARY KEY,
+                  `password` varchar(256) NOT NULL,
+                  `email` varchar(256) NOT NULL
+              )
             """
     };
     public SQLUserDAO() throws ResponseException, DataAccessException {
@@ -39,38 +39,51 @@ public class SQLUserDAO implements UserDAO {
 
     @Override
     public void createUser(UserData userData) throws ResponseException, SQLException {
-        Connection conn = null;
-        try {
-            conn = DatabaseManager.getConnection();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-        var json = new Gson().toJson(userData);
-        try {
-            String sql = "INSERT INTO users (username, password, email) VALUES ('%s','%s','%s','%s')"
-                    .formatted(userData.username(), userData.password(), userData.email());
-            try (var stmt = conn.createStatement()) {
-                int rowsAffected = stmt.executeUpdate(sql);
-                if (rowsAffected > 0) {
-                    System.out.println("ROW INSERTED");
-                } else {
-                    System.out.println("ROW NOT INSERTED");
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        conn.close();
+        var statement = "INSERT INTO userdata (username, password, email) VALUES (?, ?, ?)";
+        executeUpdate(statement, userData.username(), userData.password(), userData.email());
     }
 
     @Override
     public UserData getUser(String userName) throws ResponseException {
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT username, password, email FROM userdata WHERE username = ?";
+            try (var ps = conn.prepareStatement(statement)) {
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return readRs(rs);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new ResponseException(500, String.format("Unable to read data: %s", e.getMessage()));
+        }
         return null;
+    }
+
+    private UserData readRs(ResultSet rs) throws SQLException {
+        var username = rs.getString("username");
+        var password = rs.getString("password");
+        var email = rs.getString("email");
+        return new UserData(username, password, email);
     }
 
     @Override
     public void clear() throws ResponseException {
-
+        var statement = "DELETE FROM userdata";
+        executeUpdate(statement);
+    }
+    private void executeUpdate(String statement, Object... params) throws ResponseException {
+        try (var conn = DatabaseManager.getConnection();
+             var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
+            for (var i = 0; i < params.length; i++) {
+                if (params[i] instanceof String p) ps.setString(i + 1, p);
+                else if (params[i] instanceof Integer p) ps.setInt(i + 1, p);
+                else if (params[i] == null) ps.setNull(i + 1, java.sql.Types.NULL);
+            }
+            ps.executeUpdate();
+        } catch (SQLException | DataAccessException e) {
+            throw new ResponseException(500, String.format("Unable to update database: %s, %s", statement, e.getMessage()));
+        }
     }
 }
 
