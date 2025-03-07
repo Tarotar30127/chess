@@ -7,6 +7,9 @@ import model.AuthData;
 import model.GameData;
 import model.UserData;
 import model.JoinColorId;
+import org.mindrot.jbcrypt.BCrypt;
+
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.UUID;
@@ -63,7 +66,7 @@ public class Service {
         try {
             retrivedUser = userDAO.getUser(user.username());
             if (retrivedUser != null) {
-                if (!Objects.equals(retrivedUser.password(), user.password())) {
+                if (!BCrypt.checkpw(user.password(), retrivedUser.password())) {
                     retrivedUser = null;
                 }
             }
@@ -82,8 +85,10 @@ public class Service {
 
     public AuthData registerUser(UserData user) throws ResponseException {
         try {
-            userDAO.createUser(user);
-        } catch (ResponseException e) {
+            String hash = BCrypt.hashpw(user.password(), BCrypt.gensalt());
+            UserData userData = new UserData(user.username(), hash, user.email());
+            userDAO.createUser(userData);
+        } catch (ResponseException | SQLException e) {
             throw new ResponseException(403, "Error: already taken");
         }
         String generateToken = generateToken();
