@@ -1,9 +1,13 @@
 package dataaccess;
 
 import chess.ChessGame;
+import com.google.gson.Gson;
 import exception.ResponseException;
 import model.GameData;
+import org.w3c.dom.Text;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 
@@ -38,16 +42,51 @@ public class SQLGameDAO extends BasicDAO implements GameDAO{
 
     @Override
     public Collection<GameData> listgames() {
-        return List.of();
+        var result = new Collection<>(GameData);
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT gameId, json FROM gameData";
+            try (var ps = conn.prepareStatement(statement)) {
+                try (var rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        result.add(readRd(rs));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new ResponseException(500, String.format("Unable to read data: %s", e.getMessage()));
+        }
+        return result;
     }
 
     @Override
-    public GameData getGame(int gameID) {
+    public GameData getGame(int gameID) throws ResponseException {
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT gameId, whiteUserName, blackUserName, gameName, chessGame FROM gameData WHERE gameId = ?";
+            try (var ps = conn.prepareStatement(statement)) {
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return readRs(rs);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new ResponseException(500, String.format("Unable to read data: %s", e.getMessage()));
+        }
         return null;
     }
+    private GameData readRs(ResultSet rs) throws SQLException {
+        var gameId = rs.getInt("gameId");
+        var whiteUserName = rs.getString("whiteUserName");
+        var blackUserName = rs.getString("blackUserName");
+        var gameName = rs.getString("gameName");
+        var chessGameJson = rs.getString("chessGame");
+        ChessGame chessGame = new Gson().fromJson(chessGameJson, ChessGame.class);
+        return new GameData(gameId, whiteUserName, blackUserName, gameName, chessGame);
+    }
 
     @Override
-    public void clear() {
-
+    public void clear() throws ResponseException {
+        var statement = "DELETE FROM gameData";
+        executeUpdate(statement);
     }
 }
