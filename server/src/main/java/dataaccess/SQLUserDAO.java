@@ -6,8 +6,6 @@ import model.UserData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
-
 public class SQLUserDAO extends BasicDAO implements UserDAO {
     private final String[] statement = { """
             CREATE TABLE IF NOT EXISTS userdata (
