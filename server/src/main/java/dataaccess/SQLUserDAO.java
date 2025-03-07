@@ -8,7 +8,7 @@ import java.sql.SQLException;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 
-public class SQLUserDAO implements UserDAO {
+public class SQLUserDAO extends BasicDAO implements UserDAO {
     private final String[] statement = { """
             CREATE TABLE IF NOT EXISTS userdata (
                   `username` varchar(256) NOT NULL PRIMARY KEY,
@@ -18,23 +18,7 @@ public class SQLUserDAO implements UserDAO {
             """
     };
     public SQLUserDAO() throws ResponseException, DataAccessException {
-        try {
-            configureDatabase();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    private void configureDatabase() throws DataAccessException, ResponseException {
-        DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()) {
-            for (var state : statement) {
-                try (var preparedStatement = conn.prepareStatement(state)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            throw new ResponseException(500, String.format("Unable to configure database: %s", ex.getMessage()));
-        }
+        configureDatabase(statement);
     }
 
     @Override
@@ -72,18 +56,6 @@ public class SQLUserDAO implements UserDAO {
         var statement = "DELETE FROM userdata";
         executeUpdate(statement);
     }
-    private void executeUpdate(String statement, Object... params) throws ResponseException {
-        try (var conn = DatabaseManager.getConnection();
-             var ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
-            for (var i = 0; i < params.length; i++) {
-                if (params[i] instanceof String p) ps.setString(i + 1, p);
-                else if (params[i] instanceof Integer p) ps.setInt(i + 1, p);
-                else if (params[i] == null) ps.setNull(i + 1, java.sql.Types.NULL);
-            }
-            ps.executeUpdate();
-        } catch (SQLException | DataAccessException e) {
-            throw new ResponseException(500, String.format("Unable to update database: %s, %s", statement, e.getMessage()));
-        }
-    }
+
 }
 
