@@ -54,12 +54,15 @@ public class SQLAuthDAO extends BasicDAO implements AuthDAO{
     }
 
     @Override
-    public AuthData deleteAuth(String authToken) {
-        return null;
+    public AuthData deleteAuth(String authToken) throws ResponseException {
+        var statement = "DELETE FROM pet WHERE id=?";
+        executeUpdate(statement, authToken);
+        return getAuth(authToken);
     }
 
     @Override
-    public void clear() {
-
+    public void clear() throws ResponseException {
+        var statement = "DELETE FROM authdata";
+        executeUpdate(statement);
     }
 }
