@@ -3,9 +3,8 @@ package dataaccess;
 import exception.ResponseException;
 import model.AuthData;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
 
 
 public class SQLAuthDAO extends BasicDAO implements AuthDAO{
@@ -22,12 +21,36 @@ public class SQLAuthDAO extends BasicDAO implements AuthDAO{
 
     @Override
     public AuthData addAuth(AuthData authData) throws ResponseException {
-        return null;
+        try {
+            var statement = "INSERT INTO userdata (username, authtoken) VALUES (?, ?)";
+            executeUpdate(statement, authData.username(), authData.authToken());
+        } catch (ResponseException e) {
+            throw new ResponseException(500, "unable to create");
+        }
+        return authData;
     }
 
     @Override
-    public AuthData getAuth(String authToken) {
+    public AuthData getAuth(String authToken) throws ResponseException {
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT authtoken, username FROM authdata WHERE username = ?";
+            try (var ps = conn.prepareStatement(statement)) {
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return readRs(rs);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new ResponseException(500, String.format("Unable to read data: %s", e.getMessage()));
+        }
         return null;
+    }
+
+    private AuthData readRs(ResultSet rs) throws SQLException {
+        var authtoken = rs.getString("authtoken");
+        var username = rs.getString("username");
+        return new AuthData(authtoken, username);
     }
 
     @Override
