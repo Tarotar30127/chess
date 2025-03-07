@@ -8,13 +8,12 @@ import java.sql.SQLException;
 
 
 public class SQLAuthDAO extends BasicDAO implements AuthDAO{
-    private final String[] statement = { """
+    private final String statement = """
             CREATE TABLE IF NOT EXISTS authdata (
                   `authtoken` varchar(256) NOT NULL PRIMARY KEY,
                   `username` varchar(256) NOT NULL
               )
-            """
-    };
+            """;
     public SQLAuthDAO() {
         try {
             configureDatabase(statement);

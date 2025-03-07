@@ -5,12 +5,15 @@ import exception.ResponseException;
 import java.sql.SQLException;
 
 public class BasicDAO {
-    protected void configureDatabase(String[] statements) throws ResponseException {
+    protected void configureDatabase(String statement) throws ResponseException {
+        try {
+            DatabaseManager.createDatabase();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
         try (var conn = DatabaseManager.getConnection()) {
-            for (var state : statements) {
-                try (var preparedStatement = conn.prepareStatement(state)) {
-                    preparedStatement.executeUpdate();
-                }
+            try (var preparedStatement = conn.prepareStatement(statement)) {
+                preparedStatement.executeUpdate();
             }
         } catch (SQLException ex) {
             throw new ResponseException(500, String.format("Unable to configure database: %s", ex.getMessage()));

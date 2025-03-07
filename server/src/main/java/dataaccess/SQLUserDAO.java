@@ -7,14 +7,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class SQLUserDAO extends BasicDAO implements UserDAO {
-    private final String[] statement = { """
+    private final String statement = """
             CREATE TABLE IF NOT EXISTS userdata (
                   `username` varchar(256) NOT NULL PRIMARY KEY,
                   `password` varchar(256) NOT NULL,
                   `email` varchar(256) NOT NULL
               )
-            """
-    };
+            """;
     public SQLUserDAO() {
         try {
             configureDatabase(statement);

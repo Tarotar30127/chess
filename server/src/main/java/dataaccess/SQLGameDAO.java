@@ -12,7 +12,7 @@ import java.util.Collection;
 
 public class SQLGameDAO extends BasicDAO implements GameDAO{
     private int nextId = 1111;
-    private final String[] statement = { """
+    private final String statement = """
             CREATE TABLE IF NOT EXISTS gameData (
                   `gameId` int NOT NULL PRIMARY KEY AUTO_INCREMENT,
                   `whiteUserName` varchar(256),
@@ -20,8 +20,7 @@ public class SQLGameDAO extends BasicDAO implements GameDAO{
                   `gameName` varchar(256) NOT NULL,
                   chessGame text
               )
-            """
-    };
+            """;
     public SQLGameDAO() {
         try {
             configureDatabase(statement);
