@@ -15,23 +15,27 @@ public class SQLAuthDAO extends BasicDAO implements AuthDAO{
               )
             """
     };
-    public SQLAuthDAO() throws ResponseException{
-        configureDatabase(statement);
+    public SQLAuthDAO() {
+        try {
+            configureDatabase(statement);
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
-    public AuthData addAuth(AuthData authData) throws ResponseException {
+    public AuthData addAuth(AuthData authData) {
         try {
             var statement = "INSERT INTO userdata (username, authtoken) VALUES (?, ?)";
             executeUpdate(statement, authData.username(), authData.authToken());
         } catch (ResponseException e) {
-            throw new ResponseException(500, "unable to create");
+            throw new RuntimeException(e);
         }
         return authData;
     }
 
     @Override
-    public AuthData getAuth(String authToken) throws ResponseException {
+    public AuthData getAuth(String authToken) {
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT authtoken, username FROM authdata WHERE username = ?";
             try (var ps = conn.prepareStatement(statement)) {
@@ -42,27 +46,39 @@ public class SQLAuthDAO extends BasicDAO implements AuthDAO{
                 }
             }
         } catch (Exception e) {
-            throw new ResponseException(500, String.format("Unable to read data: %s", e.getMessage()));
+            throw new RuntimeException(e);
         }
         return null;
     }
 
-    private AuthData readRs(ResultSet rs) throws SQLException {
-        var authtoken = rs.getString("authtoken");
-        var username = rs.getString("username");
-        return new AuthData(authtoken, username);
+    private AuthData readRs(ResultSet rs) {
+        try {
+            var authtoken = rs.getString("authtoken");
+            var username = rs.getString("username");
+            return new AuthData(authtoken, username);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
-    public AuthData deleteAuth(String authToken) throws ResponseException {
+    public AuthData deleteAuth(String authToken) {
         var statement = "DELETE FROM pet WHERE id=?";
-        executeUpdate(statement, authToken);
+        try {
+            executeUpdate(statement, authToken);
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
+        }
         return getAuth(authToken);
     }
 
     @Override
-    public void clear() throws ResponseException {
-        var statement = "DELETE FROM authdata";
-        executeUpdate(statement);
+    public void clear() {
+        try {
+            var statement = "DELETE FROM authdata";
+            executeUpdate(statement);
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

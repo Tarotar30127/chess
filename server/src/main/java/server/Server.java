@@ -14,9 +14,9 @@ public class Server {
     static ServerHandler serverHandler;
 
     public Server() {
-        this.userDAO = new MemoryUserDAO();
-        this.authDAO = new MemoryAuthDAO();
-        this.gameDAO = new MemoryGameDAO();
+        this.userDAO = new SQLUserDAO();
+        this.authDAO = new SQLAuthDAO();
+        this.gameDAO = new SQLGameDAO();
         Service service = new Service(userDAO, authDAO, gameDAO);
         serverHandler = new ServerHandler(service);
     }

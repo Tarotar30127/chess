@@ -6,7 +6,6 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import exception.ResponseException;
 import model.*;
-import org.mindrot.jbcrypt.BCrypt;
 import service.Service;
 import spark.Request;
 import spark.Response;

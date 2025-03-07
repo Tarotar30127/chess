@@ -15,18 +15,26 @@ public class SQLUserDAO extends BasicDAO implements UserDAO {
               )
             """
     };
-    public SQLUserDAO() throws ResponseException, DataAccessException {
-        configureDatabase(statement);
+    public SQLUserDAO() {
+        try {
+            configureDatabase(statement);
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
-    public void createUser(UserData userData) throws ResponseException, SQLException {
+    public void createUser(UserData userData) {
         var statement = "INSERT INTO userdata (username, password, email) VALUES (?, ?, ?)";
-        executeUpdate(statement, userData.username(), userData.password(), userData.email());
+        try {
+            executeUpdate(statement, userData.username(), userData.password(), userData.email());
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
-    public UserData getUser(String userName) throws ResponseException {
+    public UserData getUser(String userName) {
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT username, password, email FROM userdata WHERE username = ?";
             try (var ps = conn.prepareStatement(statement)) {
@@ -37,8 +45,7 @@ public class SQLUserDAO extends BasicDAO implements UserDAO {
                 }
             }
         } catch (Exception e) {
-            throw new ResponseException(500, String.format("Unable to read data: %s", e.getMessage()));
-        }
+            throw new RuntimeException(e);        }
         return null;
     }
 
@@ -50,9 +57,13 @@ public class SQLUserDAO extends BasicDAO implements UserDAO {
     }
 
     @Override
-    public void clear() throws ResponseException {
-        var statement = "DELETE FROM userdata";
-        executeUpdate(statement);
+    public void clear() {
+        try {
+            var statement = "DELETE FROM userdata";
+            executeUpdate(statement);
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

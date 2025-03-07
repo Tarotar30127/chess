@@ -22,8 +22,12 @@ public class SQLGameDAO extends BasicDAO implements GameDAO{
               )
             """
     };
-    public SQLGameDAO() throws ResponseException, DataAccessException {
-        configureDatabase(statement);
+    public SQLGameDAO() {
+        try {
+            configureDatabase(statement);
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
+        }
     }
     @Override
     public void updatePlayers(GameData existingGame) {
@@ -31,16 +35,20 @@ public class SQLGameDAO extends BasicDAO implements GameDAO{
     }
 
     @Override
-    public int createGame(String gameName) throws ResponseException {
+    public int createGame(String gameName) {
         ChessGame game = new ChessGame();
         nextId++;
         var statement = "INSERT INTO gameData (gameId, whiteUserName, blackUserName, gameName, chessGame) VALUES (?, ?, ?, ?, ?)";
-        executeUpdate(statement, nextId++, null, null, gameName, game);
+        try {
+            executeUpdate(statement, nextId++, null, null, gameName, game);
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
+        }
         return nextId;
     }
 
     @Override
-    public Collection<GameData> listgames() throws ResponseException {
+    public Collection<GameData> listgames() {
         var result = new ArrayList<GameData>();
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT gameId, chessGame FROM gameData";
@@ -52,13 +60,12 @@ public class SQLGameDAO extends BasicDAO implements GameDAO{
                 }
             }
         } catch (Exception e) {
-            throw new ResponseException(500, String.format("Unable to read data: %s", e.getMessage()));
-        }
+            throw new RuntimeException(e);        }
         return result;
     }
 
     @Override
-    public GameData getGame(int gameID) throws ResponseException {
+    public GameData getGame(int gameID) {
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT gameId, whiteUserName, blackUserName, gameName, chessGame FROM gameData WHERE gameId = ?";
             try (var ps = conn.prepareStatement(statement)) {
@@ -69,23 +76,31 @@ public class SQLGameDAO extends BasicDAO implements GameDAO{
                 }
             }
         } catch (Exception e) {
-            throw new ResponseException(500, String.format("Unable to read data: %s", e.getMessage()));
+            throw new RuntimeException(e);
         }
         return null;
     }
-    private GameData readRs(ResultSet rs) throws SQLException {
-        var gameId = rs.getInt("gameId");
-        var whiteUserName = rs.getString("whiteUserName");
-        var blackUserName = rs.getString("blackUserName");
-        var gameName = rs.getString("gameName");
-        var chessGameJson = rs.getString("chessGame");
-        ChessGame chessGame = new Gson().fromJson(chessGameJson, ChessGame.class);
-        return new GameData(gameId, whiteUserName, blackUserName, gameName, chessGame);
+    private GameData readRs(ResultSet rs) {
+        try {
+            var gameId = rs.getInt("gameId");
+            var whiteUserName = rs.getString("whiteUserName");
+            var blackUserName = rs.getString("blackUserName");
+            var gameName = rs.getString("gameName");
+            var chessGameJson = rs.getString("chessGame");
+            ChessGame chessGame = new Gson().fromJson(chessGameJson, ChessGame.class);
+            return new GameData(gameId, whiteUserName, blackUserName, gameName, chessGame);
+        } catch (SQLException e) {
+            throw new RuntimeException("Error reading game data from ResultSet", e);
+        }
     }
 
     @Override
-    public void clear() throws ResponseException {
-        var statement = "DELETE FROM gameData";
-        executeUpdate(statement);
+    public void clear() {
+        try {
+            var statement = "DELETE FROM gameData";
+            executeUpdate(statement);
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

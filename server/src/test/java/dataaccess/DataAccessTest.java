@@ -3,6 +3,8 @@ import exception.ResponseException;
 import model.UserData;
 import org.junit.jupiter.api.*;
 
+import java.sql.SQLException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -26,7 +28,7 @@ public class DataAccessTest {
     }
     @Test
     @DisplayName("User Clear Pass")
-    public void userClearPass() throws ResponseException {
+    public void userClearPass() throws ResponseException, SQLException {
         UserData user1 = new UserData("tako", "legend", "@hotemail");
         UserData user2 = new UserData("tak", "legnd", "@hotemail");
         userDAO.createUser(user1);

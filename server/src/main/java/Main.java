@@ -1,4 +1,6 @@
 import chess.*;
+import dataaccess.DataAccessException;
+import exception.ResponseException;
 import server.Server;
 
 public class Main {
