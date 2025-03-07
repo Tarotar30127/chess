@@ -4,12 +4,11 @@ import chess.ChessGame;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.GameData;
-import org.w3c.dom.Text;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 public class SQLGameDAO extends BasicDAO implements GameDAO{
     private int nextId = 1111;
@@ -41,14 +40,14 @@ public class SQLGameDAO extends BasicDAO implements GameDAO{
     }
 
     @Override
-    public Collection<GameData> listgames() {
-        var result = new Collection<>(GameData);
+    public Collection<GameData> listgames() throws ResponseException {
+        var result = new ArrayList<GameData>();
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT gameId, json FROM gameData";
+            var statement = "SELECT gameId, chessGame FROM gameData";
             try (var ps = conn.prepareStatement(statement)) {
                 try (var rs = ps.executeQuery()) {
                     while (rs.next()) {
-                        result.add(readRd(rs));
+                        result.add(readRs(rs));
                     }
                 }
             }
