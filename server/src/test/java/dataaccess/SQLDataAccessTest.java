@@ -1,4 +1,5 @@
 package dataaccess;
+import chess.ChessGame;
 import exception.ResponseException;
 import model.AuthData;
 import model.GameData;
@@ -6,6 +7,7 @@ import model.UserData;
 import org.junit.jupiter.api.*;
 
 import java.sql.SQLException;
+import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -77,6 +79,67 @@ public class SQLDataAccessTest {
         }
         assertNull(authData);
     }
+    @Test
+    @DisplayName("Update Players Pass")
+    public void updatePlayersPass() throws ResponseException {
+        int gameId = gameDAO.createGame("newGame");
+        GameData newGame = new GameData(1112,"Player1", null, "newGame", new ChessGame());
+        gameDAO.updatePlayers(newGame);
+        GameData updatedGame = gameDAO.getGame(gameId);
+        assertEquals("Player1", updatedGame.whiteUserName());
+    }
+    @Test
+    @DisplayName("Update Players Fail")
+    public void updatePlayersFail() throws ResponseException {
+        assertThrows(RuntimeException.class, () -> gameDAO.updatePlayers(null));
+    }
+    @Test
+    @DisplayName("Create Game Pass")
+    public void createGamePass() throws ResponseException {
+        int gameId = gameDAO.createGame("newGame");
+        GameData gameData = gameDAO.getGame(gameId);
+        assertNotNull(gameData);
+        assertEquals("newGame", gameData.gameName());
+    }
+    @Test
+    @DisplayName("Create Game Fail")
+    public void createGameFail() {
+        assertThrows(RuntimeException.class, () -> gameDAO.createGame(null));
+    }
+    @Test
+    @DisplayName("List Games Pass")
+    public void listGamesPass() throws ResponseException {
+        gameDAO.createGame("game1");
+        gameDAO.createGame("game2");
+        Collection<GameData> games = gameDAO.listgames();
+        assertNotNull(games);
+        assertTrue(games.size() > 0);
+    }
+    @Test
+    @DisplayName("List Games Fail")
+    public void listGamesFail() throws ResponseException {
+        gameDAO.clear();
+        Collection<GameData> games = gameDAO.listgames();
+        assertTrue(games.isEmpty());
+    }
+    @Test
+    @DisplayName("Get Game Pass")
+    public void getGamePass() throws ResponseException {
+        int gameId = gameDAO.createGame("game1");
+        GameData game = gameDAO.getGame(gameId);
+        assertNotNull(game);
+        assertEquals(gameId, game.gameId());
+        assertEquals("game1", game.gameName());
+    }
+    @Test
+    @DisplayName("Get Game Fail")
+    public void getGameFail() throws ResponseException {
+        GameData game = gameDAO.getGame(9999);
+        assertNull(game);
+    }
+
+
+
 
 
 }
