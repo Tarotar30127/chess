@@ -23,12 +23,15 @@ public class SQLUserDAO extends BasicDAO implements UserDAO {
 
     @Override
     public void createUser(UserData userData) throws ResponseException {
+        if (getUser(userData.username())!= null){
+            throw new ResponseException(403, "Error: already taken");
+        }
         var statement = "INSERT INTO userdata (username, password, email) VALUES (?, ?, ?)";
         try {
             executeUpdate(statement, userData.username(), userData.password(), userData.email());
         } catch (ResponseException e) {
-            if (e.getMessage().contains("Duplicate entry")) {  // ✅ Detect duplicate username
-                throw new ResponseException(403, "Username already taken");
+            if (e.getMessage().contains("Duplicate entry")) {
+                throw new ResponseException(403, "already taken");
             }
             throw e;
         }
@@ -39,6 +42,7 @@ public class SQLUserDAO extends BasicDAO implements UserDAO {
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT username, password, email FROM userdata WHERE username = ?";
             try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, userName);
                 try (var rs = ps.executeQuery()) {
                     if (rs.next()) {
                         return readRs(rs);
