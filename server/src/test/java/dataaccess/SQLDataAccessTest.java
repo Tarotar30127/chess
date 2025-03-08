@@ -25,7 +25,7 @@ public class SQLDataAccessTest {
 
     }
     @BeforeEach
-    public void cleanSlate() throws ResponseException {
+    public void wipe() throws ResponseException {
         userDAO.clear();
         authDAO.clear();
         gameDAO.clear();

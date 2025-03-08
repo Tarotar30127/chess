@@ -26,9 +26,13 @@ public class BasicDAO {
         try (var conn = DatabaseManager.getConnection();
              var ps = conn.prepareStatement(statement)) {
             for (var i = 0; i < params.length; i++) {
-                if (params[i] instanceof String p) ps.setString(i + 1, p);
-                else if (params[i] instanceof Integer p) ps.setInt(i + 1, p);
-                else if (params[i] == null) ps.setNull(i + 1, java.sql.Types.NULL);
+                if (params[i] instanceof String p) {
+                    ps.setString(i + 1, p);
+                } else if (params[i] instanceof Integer p) {
+                    ps.setInt(i + 1, p);
+                } else if (params[i] == null) {
+                    ps.setNull(i + 1, java.sql.Types.NULL);
+                }
             }
             ps.executeUpdate();
         } catch (SQLException e) {
