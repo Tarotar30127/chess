@@ -49,7 +49,7 @@ public class SQLGameDAO extends BasicDAO implements GameDAO{
         nextId++;
         var statement = "INSERT INTO gameData (gameId, whiteUserName, blackUserName, gameName, chessGame) VALUES (?, ?, ?, ?, ?)";
         try {
-            executeUpdate(statement, nextId++, null, null, gameName, gameJson);
+            executeUpdate(statement, nextId, null, null, gameName, gameJson);
         } catch (ResponseException e) {
             throw new RuntimeException(e);
         }

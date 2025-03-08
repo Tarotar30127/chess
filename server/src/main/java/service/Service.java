@@ -31,6 +31,9 @@ public class Service {
             GameData possibleGame;
             try {
                 possibleGame = gameDAO.getGame(gameID);
+                if (possibleGame == null) {
+                    throw new ResponseException(404, "Error: Game not found");
+                }
             } catch (RuntimeException e) {
                 throw new ResponseException(400, "Error: bad request");
             }
