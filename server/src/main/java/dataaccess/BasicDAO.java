@@ -31,8 +31,13 @@ public class BasicDAO {
                 else if (params[i] == null) ps.setNull(i + 1, java.sql.Types.NULL);
             }
             ps.executeUpdate();
-        } catch (SQLException | DataAccessException e) {
-            throw new ResponseException(500, String.format("Unable to update database: %s, %s", statement, e.getMessage()));
+        } catch (SQLException e) {
+            if ("23000".equals(e.getSQLState())) {
+                throw new ResponseException(403, "Duplication error");
+            }
+            throw new ResponseException(500, "SQL Error: " + e.getMessage());
+        } catch (DataAccessException e) {
+            throw new ResponseException(500, "Database access error: " + e.getMessage());
         }
     }
 }

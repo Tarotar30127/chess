@@ -36,8 +36,9 @@ public class SQLAuthDAO extends BasicDAO implements AuthDAO{
     @Override
     public AuthData getAuth(String authToken) {
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT authtoken, username FROM authdata WHERE username = ?";
+            var statement = "SELECT authtoken, username FROM authdata WHERE authtoken = ?";
             try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, authToken);
                 try (var rs = ps.executeQuery()) {
                     if (rs.next()) {
                         return readRs(rs);
@@ -62,7 +63,7 @@ public class SQLAuthDAO extends BasicDAO implements AuthDAO{
 
     @Override
     public AuthData deleteAuth(String authToken) {
-        var statement = "DELETE FROM authdata WHERE id=?";
+        var statement = "DELETE FROM authdata WHERE authtoken=?";
         try {
             executeUpdate(statement, authToken);
         } catch (ResponseException e) {

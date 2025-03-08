@@ -1,5 +1,6 @@
 package service;
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import dataaccess.UserDAO;
 import exception.ResponseException;
@@ -11,7 +12,6 @@ import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.UUID;
 
 public class Service {
@@ -88,7 +88,7 @@ public class Service {
             String hash = BCrypt.hashpw(user.password(), BCrypt.gensalt());
             UserData userData = new UserData(user.username(), hash, user.email());
             userDAO.createUser(userData);
-        } catch (ResponseException | SQLException e) {
+        } catch (DataAccessException | SQLException e) {
             throw new ResponseException(403, "Error: already taken");
         }
         String generateToken = generateToken();

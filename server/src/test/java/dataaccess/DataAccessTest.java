@@ -28,10 +28,14 @@ public class DataAccessTest {
     }
     @Test
     @DisplayName("User Clear Pass")
-    public void userClearPass() throws ResponseException, SQLException {
+    public void userClearPass() throws ResponseException, SQLException, DataAccessException {
         UserData user1 = new UserData("tako", "legend", "@hotemail");
         UserData user2 = new UserData("tak", "legnd", "@hotemail");
-        userDAO.createUser(user1);
+        try {
+            userDAO.createUser(user1);
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
         userDAO.createUser(user2);
         userDAO.clear();
         UserData user1Data = userDAO.getUser("tako");

@@ -2,7 +2,6 @@ package dataaccess;
 
 import exception.ResponseException;
 import model.UserData;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -23,12 +22,15 @@ public class SQLUserDAO extends BasicDAO implements UserDAO {
     }
 
     @Override
-    public void createUser(UserData userData) {
+    public void createUser(UserData userData) throws ResponseException {
         var statement = "INSERT INTO userdata (username, password, email) VALUES (?, ?, ?)";
         try {
             executeUpdate(statement, userData.username(), userData.password(), userData.email());
         } catch (ResponseException e) {
-            throw new RuntimeException(e);
+            if (e.getMessage().contains("Duplicate entry")) {  // ✅ Detect duplicate username
+                throw new ResponseException(403, "Username already taken");
+            }
+            throw e;
         }
     }
 
@@ -41,10 +43,15 @@ public class SQLUserDAO extends BasicDAO implements UserDAO {
                     if (rs.next()) {
                         return readRs(rs);
                     }
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
                 }
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);        }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
         return null;
     }
 

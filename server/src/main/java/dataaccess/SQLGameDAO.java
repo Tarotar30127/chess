@@ -30,7 +30,16 @@ public class SQLGameDAO extends BasicDAO implements GameDAO{
     }
     @Override
     public void updatePlayers(GameData existingGame) {
-
+        try {
+            var statement = """
+            UPDATE gameData
+            SET whiteUserName = ?, blackUserName = ?
+            WHERE gameId = ?
+        """;
+            executeUpdate(statement, existingGame.whiteUserName(), existingGame.blackUserName(), existingGame.gameId());
+        } catch (ResponseException e) {
+            throw new RuntimeException("Error updating player information", e);
+        }
     }
 
     @Override
@@ -50,7 +59,7 @@ public class SQLGameDAO extends BasicDAO implements GameDAO{
     public Collection<GameData> listgames() {
         var result = new ArrayList<GameData>();
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT gameId, chessGame FROM gameData";
+            var statement = "SELECT gameId, whiteUserName, blackUserName, gameName, chessGame FROM gameData";
             try (var ps = conn.prepareStatement(statement)) {
                 try (var rs = ps.executeQuery()) {
                     while (rs.next()) {
