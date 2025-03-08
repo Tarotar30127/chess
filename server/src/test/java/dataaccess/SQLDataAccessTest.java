@@ -169,7 +169,7 @@ public class SQLDataAccessTest {
     }
     @Test
     @DisplayName("Delete Auth Pass")
-    public void deleteAuthPositiveTest() throws ResponseException {
+    public void deleteAuthPass() throws ResponseException {
         AuthData authData = new AuthData("fox", "user1");
         authDAO.addAuth(authData);
         AuthData result = authDAO.deleteAuth("fox");
@@ -178,12 +178,44 @@ public class SQLDataAccessTest {
 
     @Test
     @DisplayName("Delete Auth Fail")
-    public void deleteAuthNegativeTestNonExistingToken() throws ResponseException {
+    public void deleteAuthFail() throws ResponseException {
         AuthData result = authDAO.deleteAuth("dragonWarrior");
         assertNull(result);
     }
-
-
-
-
+    @Test
+    @DisplayName("Create User Pass")
+    public void createUserPass() throws ResponseException, SQLException, DataAccessException {
+        UserData userData = new UserData("ya", "shi", "u@hotmail.com");
+        userDAO.createUser(userData);
+        UserData result = userDAO.getUser("ya");
+        assertNotNull(result);
+        assertEquals("ya", result.username());
+        assertEquals("shi", result.password());
+        assertEquals("u@hotmail.com", result.email());
+    }
+    @Test
+    @DisplayName("Create User Fail")
+    public void createUserFail() throws ResponseException, SQLException, DataAccessException {
+        UserData userData1 = new UserData("user1", "password", "user@ggo.com");
+        userDAO.createUser(userData1);
+        UserData userData2 = new UserData("user1", "password", "user@ggo.com");
+        assertThrows(ResponseException.class, () -> userDAO.createUser(userData2));
+    }
+    @Test
+    @DisplayName("Get User Pass")
+    public void getUserPass() throws ResponseException, SQLException, DataAccessException {
+        UserData userData = new UserData("pika", "thunder", "us@ggog.com");
+        userDAO.createUser(userData);
+        UserData result = userDAO.getUser("pika");
+        assertNotNull(result);
+        assertEquals("pika", result.username());
+        assertEquals("thunder", result.password());
+        assertEquals("us@ggog.com", result.email());
+    }
+    @Test
+    @DisplayName("Get User Fail")
+    public void getUserFail() throws ResponseException {
+        UserData result = userDAO.getUser("pikachu");
+        assertNull(result);
+    }
 }
