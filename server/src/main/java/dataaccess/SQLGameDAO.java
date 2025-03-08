@@ -45,10 +45,11 @@ public class SQLGameDAO extends BasicDAO implements GameDAO{
     @Override
     public int createGame(String gameName) {
         ChessGame game = new ChessGame();
+        var gameJson = new Gson().toJson(game);
         nextId++;
         var statement = "INSERT INTO gameData (gameId, whiteUserName, blackUserName, gameName, chessGame) VALUES (?, ?, ?, ?, ?)";
         try {
-            executeUpdate(statement, nextId++, null, null, gameName, game);
+            executeUpdate(statement, nextId++, null, null, gameName, gameJson);
         } catch (ResponseException e) {
             throw new RuntimeException(e);
         }
@@ -77,6 +78,7 @@ public class SQLGameDAO extends BasicDAO implements GameDAO{
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT gameId, whiteUserName, blackUserName, gameName, chessGame FROM gameData WHERE gameId = ?";
             try (var ps = conn.prepareStatement(statement)) {
+                ps.setInt(1, gameID);
                 try (var rs = ps.executeQuery()) {
                     if (rs.next()) {
                         return readRs(rs);
