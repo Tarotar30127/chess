@@ -137,7 +137,51 @@ public class SQLDataAccessTest {
         GameData game = gameDAO.getGame(9999);
         assertNull(game);
     }
+    @Test
+    @DisplayName("Add Auth Pass")
+    public void addAuthPass() throws ResponseException {
+        AuthData authData = new AuthData("legend", "user1");
+        AuthData result = authDAO.addAuth(authData);
+        assertNotNull(result);
+        assertEquals("user1", result.username());
+        assertEquals("legend", result.authToken());
+    }
+    @Test
+    @DisplayName("Add Auth Fail")
+    public void addAuthFail() throws ResponseException {
+        assertThrows(RuntimeException.class, () -> authDAO.addAuth(null));
+    }
+    @Test
+    @DisplayName("Get Auth Pass")
+    public void getAuthPass() throws ResponseException {
+        AuthData authData = new AuthData("panda", "user1");
+        authDAO.addAuth(authData);
+        AuthData result = authDAO.getAuth("panda");
+        assertNotNull(result);
+        assertEquals("user1", result.username());
+        assertEquals("panda", result.authToken());
+    }
+    @Test
+    @DisplayName("Get Auth Fail")
+    public void getAuthFail() throws ResponseException {
+        AuthData result = authDAO.getAuth("tooCool");
+        assertNull(result);
+    }
+    @Test
+    @DisplayName("Delete Auth Pass")
+    public void deleteAuthPositiveTest() throws ResponseException {
+        AuthData authData = new AuthData("fox", "user1");
+        authDAO.addAuth(authData);
+        AuthData result = authDAO.deleteAuth("fox");
+        assertNull(result);
+    }
 
+    @Test
+    @DisplayName("Delete Auth Fail")
+    public void deleteAuthNegativeTestNonExistingToken() throws ResponseException {
+        AuthData result = authDAO.deleteAuth("dragonWarrior");
+        assertNull(result);
+    }
 
 
 
