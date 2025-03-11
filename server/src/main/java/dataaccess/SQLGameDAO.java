@@ -64,7 +64,7 @@ public class SQLGameDAO extends BasicDAO implements GameDAO{
             try (var ps = conn.prepareStatement(statement)) {
                 try (var rs = ps.executeQuery()) {
                     while (rs.next()) {
-                        result.add(readRs(rs));
+                        result.add(readGame(rs));
                     }
                 }
             }
@@ -81,7 +81,7 @@ public class SQLGameDAO extends BasicDAO implements GameDAO{
                 ps.setInt(1, gameID);
                 try (var rs = ps.executeQuery()) {
                     if (rs.next()) {
-                        return readRs(rs);
+                        return readGame(rs);
                     }
                 }
             }
@@ -90,7 +90,7 @@ public class SQLGameDAO extends BasicDAO implements GameDAO{
         }
         return null;
     }
-    private GameData readRs(ResultSet rs) {
+    private GameData readGame(ResultSet rs) {
         try {
             var gameId = rs.getInt("gameId");
             var whiteUserName = rs.getString("whiteUserName");

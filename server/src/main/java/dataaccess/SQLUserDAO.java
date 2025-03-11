@@ -45,7 +45,7 @@ public class SQLUserDAO extends BasicDAO implements UserDAO {
                 ps.setString(1, userName);
                 try (var rs = ps.executeQuery()) {
                     if (rs.next()) {
-                        return readRs(rs);
+                        return readUser(rs);
                     }
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
@@ -59,7 +59,7 @@ public class SQLUserDAO extends BasicDAO implements UserDAO {
         return null;
     }
 
-    private UserData readRs(ResultSet rs) throws SQLException {
+    private UserData readUser(ResultSet rs) throws SQLException {
         var username = rs.getString("username");
         var password = rs.getString("password");
         var email = rs.getString("email");

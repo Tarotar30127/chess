@@ -41,7 +41,7 @@ public class SQLAuthDAO extends BasicDAO implements AuthDAO{
                 ps.setString(1, authToken);
                 try (var rs = ps.executeQuery()) {
                     if (rs.next()) {
-                        return readRs(rs);
+                        return readAuth(rs);
                     }
                 }
             }
@@ -51,7 +51,7 @@ public class SQLAuthDAO extends BasicDAO implements AuthDAO{
         return null;
     }
 
-    private AuthData readRs(ResultSet rs) {
+    private AuthData readAuth(ResultSet rs) {
         try {
             var authtoken = rs.getString("authtoken");
             var username = rs.getString("username");
