@@ -1,16 +1,24 @@
 package ui;
 
+import chess.ChessGame;
+
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Random;
+import java.util.*;
 
+import static java.lang.System.out;
 import static ui.EscapeSequences.*;
 
 public class BoardPrintLayout {
+    ChessGame currentGame;
+
+    public BoardPrintLayout(ChessGame currentGame){
+        this.currentGame = currentGame;
+    }
 
     // Board dimensions.
-    private static final int BOARD_SIZE_IN_SQUARES = 8;
-    private static final int SQUARE_SIZE_IN_PADDED_CHARS = 3;
+    private static final int BOARD_SIZE_IN_SQUARES = 10;
+    private static final int SQUARE_SIZE_IN_PADDED_CHARS = 1;
     private static final int LINE_WIDTH_IN_PADDED_CHARS = 1;
 
     // Padded characters.
@@ -27,113 +35,114 @@ public class BoardPrintLayout {
     public static final String BLACK_KNIGHT = " ♞ ";
     public static final String BLACK_ROOK = " ♜ ";
     public static final String BLACK_PAWN = " ♟ ";
-    private static final String X = " X ";
-    private static final String O = " O ";
 
     private static Random rand = new Random();
-
 
     public static void main(String[] args) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
 
         out.print(ERASE_SCREEN);
+        drawChessBoard(out, ChessGame.TeamColor.BLACK);
 
-        drawHeaders(out);
-
-        drawChessBoard(out);
-
-        out.print(SET_BG_COLOR_WHITE);
+        out.print(SET_BG_COLOR_BLACK);
         out.print(SET_TEXT_COLOR_WHITE);
     }
 
-    private static void drawHeaders(PrintStream out) {
 
-        setBlack(out);
 
-        String[] headers = { "A", "B", "C", "D", "E", "F", "G", "H" };
-        for (int boardCol = 0; boardCol >= BOARD_SIZE_IN_SQUARES; ++boardCol) {
-            drawHeader(out, headers[boardCol]);
+    private static void drawChessBoard(PrintStream out,ChessGame.TeamColor teamColor) {
+        List<String> headers = new ArrayList<>(Arrays.asList("", "A", "B", "C", "D", "E", "F", "G", "H", ""));
+        List<String> fileLabel = new ArrayList<>(Arrays.asList(" 1 ", " 2 ", " 3 ", " 4 ", " 5 ", " 6 ", " 7 ", " 8 "));
+        if (teamColor == ChessGame.TeamColor.BLACK) {
+            Collections.reverse(headers);
+            Collections.reverse(fileLabel);
         }
 
+        drawHeaders(headers);
+        int counter = 1;
+        for (String file:fileLabel){
+            if (counter % 2 == 0) {
+                drawEvenRow(file);
+            } else {
+                drawOddRow(file);
+            }
+            ++counter;
+
+        }
+        drawHeaders(headers);
+
+    }
+
+    private static void drawHeaders(List<String> headers) {
+        int index = 0;
+        for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; boardCol++) {
+            setWhite(out);
+            int prefixLength = SQUARE_SIZE_IN_PADDED_CHARS / 2;
+            int suffixLength = SQUARE_SIZE_IN_PADDED_CHARS - prefixLength - 1;
+            out.print(EMPTY.repeat(prefixLength));
+            printChar(headers.get(index));
+            out.print(EMPTY.repeat(suffixLength));
+            if (boardCol < BOARD_SIZE_IN_SQUARES - 1) {
+                setWhite(out);
+                out.print(EMPTY.repeat(LINE_WIDTH_IN_PADDED_CHARS));
+            }
+            setBlack(out);
+            index++;
+        }
+        out.println();
+    }
+    private static void drawOddRow(String fileLabel) {
+        int BOARD_SIZE = BOARD_SIZE_IN_SQUARES-5;
+        drawFileLabel(fileLabel);
+        for (int boardCol = 0; boardCol < BOARD_SIZE; boardCol++) {
+            setWhite(out);
+            out.print(EMPTY.repeat(SQUARE_SIZE_IN_PADDED_CHARS));
+            if (boardCol < BOARD_SIZE - 1) {
+                setGrey(out);
+                out.print(EMPTY.repeat(LINE_WIDTH_IN_PADDED_CHARS));
+            }
+            setBlack(out);
+        }
+       drawFileLabel(fileLabel);
+       out.println();
+    }
+
+    private static void drawEvenRow(String fileLabel) {
+        int BOARD_SIZE = BOARD_SIZE_IN_SQUARES - 5;
+        drawFileLabel(fileLabel);
+        for (int boardCol = 0; boardCol < BOARD_SIZE; boardCol++) {
+           setGrey(out);
+           out.print(EMPTY.repeat(SQUARE_SIZE_IN_PADDED_CHARS));
+            if (boardCol < BOARD_SIZE - 1) {
+               setWhite(out);
+               out.print(EMPTY.repeat(LINE_WIDTH_IN_PADDED_CHARS));
+            }
+            setBlack(out);
+        }
+
+
+        drawFileLabel(fileLabel);
         out.println();
     }
 
-    private static void drawHeader(PrintStream out, String headerText) {
+    private static void drawFileLabel(String fileLabel) {
+        setWhite(out);
         int prefixLength = SQUARE_SIZE_IN_PADDED_CHARS / 2;
         int suffixLength = SQUARE_SIZE_IN_PADDED_CHARS - prefixLength - 1;
-
         out.print(EMPTY.repeat(prefixLength));
-        printHeaderText(out, headerText);
+        printChar(fileLabel);
         out.print(EMPTY.repeat(suffixLength));
-    }
-
-    private static void printHeaderText(PrintStream out, String player) {
-        out.print(SET_BG_COLOR_BLACK);
-        out.print(SET_TEXT_COLOR_GREEN);
-
-        out.print(player);
-
         setBlack(out);
     }
 
-    private static void drawChessBoard(PrintStream out) {
+    private static void printChar(String Char) {
+    out.print(SET_BG_COLOR_WHITE);
+    out.print(SET_TEXT_COLOR_BLACK);
 
-        for (int boardRow = 0; boardRow < BOARD_SIZE_IN_SQUARES; ++boardRow) {
+    out.print(Char);
 
-            drawRowOfSquares(out);
-
-            if (boardRow < BOARD_SIZE_IN_SQUARES - 1) {
-                // Draw horizontal row separator.
-                drawHorizontalLine(out);
-                setBlack(out);
-            }
-        }
-    }
-
-    private static void drawRowOfSquares(PrintStream out) {
-
-        for (int squareRow = 0; squareRow < SQUARE_SIZE_IN_PADDED_CHARS; ++squareRow) {
-            for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
-                setWhite(out);
-
-                if (squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2) {
-                    int prefixLength = SQUARE_SIZE_IN_PADDED_CHARS / 2;
-                    int suffixLength = SQUARE_SIZE_IN_PADDED_CHARS - prefixLength - 1;
-
-                    out.print(EMPTY.repeat(prefixLength));
-                    printPlayer(out, rand.nextBoolean() ? X : O);
-                    out.print(EMPTY.repeat(suffixLength));
-                }
-                else {
-                    out.print(EMPTY.repeat(SQUARE_SIZE_IN_PADDED_CHARS));
-                }
-
-                if (boardCol < BOARD_SIZE_IN_SQUARES - 1) {
-                    // Draw vertical column separator.
-                    setGrey(out);
-                    out.print(EMPTY.repeat(LINE_WIDTH_IN_PADDED_CHARS));
-                }
-
-                setBlack(out);
-            }
-
-            out.println();
-        }
-    }
-
-    private static void drawHorizontalLine(PrintStream out) {
-
-        int boardSizeInSpaces = BOARD_SIZE_IN_SQUARES * SQUARE_SIZE_IN_PADDED_CHARS +
-                (BOARD_SIZE_IN_SQUARES - 1) * LINE_WIDTH_IN_PADDED_CHARS;
-
-        for (int lineRow = 0; lineRow < LINE_WIDTH_IN_PADDED_CHARS; ++lineRow) {
-            setGrey(out);
-            out.print(EMPTY.repeat(boardSizeInSpaces));
-
-            setBlack(out);
-            out.println();
-        }
-    }
+    setWhite(out);
+}
 
     private static void setWhite(PrintStream out) {
         out.print(SET_BG_COLOR_WHITE);
@@ -141,21 +150,12 @@ public class BoardPrintLayout {
     }
 
     private static void setGrey(PrintStream out) {
-        out.print(SET_BG_COLOR_DARK_GREY);
-        out.print(SET_TEXT_COLOR_DARK_GREY);
+        out.print(SET_BG_COLOR_LIGHT_GREY);
+        out.print(SET_TEXT_COLOR_LIGHT_GREY);
     }
 
     private static void setBlack(PrintStream out) {
         out.print(SET_BG_COLOR_BLACK);
         out.print(SET_TEXT_COLOR_BLACK);
-    }
-
-    private static void printPlayer(PrintStream out, String player) {
-        out.print(SET_BG_COLOR_WHITE);
-        out.print(SET_TEXT_COLOR_BLACK);
-
-        out.print(player);
-
-        setWhite(out);
     }
 }
