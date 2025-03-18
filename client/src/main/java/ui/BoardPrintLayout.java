@@ -1,6 +1,9 @@
 package ui;
 
+import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessPiece;
+import chess.ChessPosition;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -23,18 +26,6 @@ public class BoardPrintLayout {
 
     // Padded characters.
     private static final String EMPTY = "   ";
-    public static final String WHITE_KING = " ♔ ";
-    public static final String WHITE_QUEEN = " ♕ ";
-    public static final String WHITE_BISHOP = " ♗ ";
-    public static final String WHITE_KNIGHT = " ♘ ";
-    public static final String WHITE_ROOK = " ♖ ";
-    public static final String WHITE_PAWN = " ♙ ";
-    public static final String BLACK_KING = " ♚ ";
-    public static final String BLACK_QUEEN = " ♛ ";
-    public static final String BLACK_BISHOP = " ♝ ";
-    public static final String BLACK_KNIGHT = " ♞ ";
-    public static final String BLACK_ROOK = " ♜ ";
-    public static final String BLACK_PAWN = " ♟ ";
 
     private static Random rand = new Random();
 
@@ -42,7 +33,8 @@ public class BoardPrintLayout {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
 
         out.print(ERASE_SCREEN);
-        drawChessBoard(out, ChessGame.TeamColor.BLACK);
+        ChessGame game = new ChessGame();
+        drawChessBoard(out, ChessGame.TeamColor.BLACK, game);
 
         out.print(SET_BG_COLOR_BLACK);
         out.print(SET_TEXT_COLOR_WHITE);
@@ -50,9 +42,10 @@ public class BoardPrintLayout {
 
 
 
-    private static void drawChessBoard(PrintStream out,ChessGame.TeamColor teamColor) {
+    private static void drawChessBoard(PrintStream out,ChessGame.TeamColor teamColor, ChessGame game) {
         List<String> headers = new ArrayList<>(Arrays.asList("", "A", "B", "C", "D", "E", "F", "G", "H", ""));
         List<String> fileLabel = new ArrayList<>(Arrays.asList(" 1 ", " 2 ", " 3 ", " 4 ", " 5 ", " 6 ", " 7 ", " 8 "));
+        ChessBoard board = game.getBoard();
         if (teamColor == ChessGame.TeamColor.BLACK) {
             Collections.reverse(headers);
             Collections.reverse(fileLabel);
@@ -62,9 +55,9 @@ public class BoardPrintLayout {
         int counter = 1;
         for (String file:fileLabel){
             if (counter % 2 == 0) {
-                drawEvenRow(file);
+                drawEvenRow(file, Integer.parseInt(file.trim()), board);
             } else {
-                drawOddRow(file);
+                drawOddRow(file, Integer.parseInt(file.trim()), board);
             }
             ++counter;
 
@@ -91,13 +84,19 @@ public class BoardPrintLayout {
         }
         out.println();
     }
-    private static void drawOddRow(String fileLabel) {
-        int BOARD_SIZE = BOARD_SIZE_IN_SQUARES-5;
+    private static void drawOddRow(String fileLabel, int row, ChessBoard board) {
+        int BOARD_SIZE = BOARD_SIZE_IN_SQUARES-6;
         drawFileLabel(fileLabel);
         for (int boardCol = 0; boardCol < BOARD_SIZE; boardCol++) {
             setWhite(out);
+            String piece = new BoardPrintLayout(null).placePiece(row, boardCol, board);
+            if (piece != null) {
+                out.print(piece);
+            } else {
+                out.print(EMPTY.repeat(SQUARE_SIZE_IN_PADDED_CHARS));
+            }
             out.print(EMPTY.repeat(SQUARE_SIZE_IN_PADDED_CHARS));
-            if (boardCol < BOARD_SIZE - 1) {
+            if (boardCol < BOARD_SIZE) {
                 setGrey(out);
                 out.print(EMPTY.repeat(LINE_WIDTH_IN_PADDED_CHARS));
             }
@@ -107,15 +106,21 @@ public class BoardPrintLayout {
        out.println();
     }
 
-    private static void drawEvenRow(String fileLabel) {
-        int BOARD_SIZE = BOARD_SIZE_IN_SQUARES - 5;
+    private static void drawEvenRow(String fileLabel, int row, ChessBoard board) {
+        int BOARD_SIZE = BOARD_SIZE_IN_SQUARES - 6;
         drawFileLabel(fileLabel);
         for (int boardCol = 0; boardCol < BOARD_SIZE; boardCol++) {
            setGrey(out);
+            String piece = new BoardPrintLayout(null).placePiece(row, boardCol, board); // Get piece at (row, col)
+            if (piece != null) {
+                out.print(piece); // Print the piece
+            } else {
+                out.print(EMPTY.repeat(SQUARE_SIZE_IN_PADDED_CHARS));
+            }
            out.print(EMPTY.repeat(SQUARE_SIZE_IN_PADDED_CHARS));
-            if (boardCol < BOARD_SIZE - 1) {
-               setWhite(out);
-               out.print(EMPTY.repeat(LINE_WIDTH_IN_PADDED_CHARS));
+            if (boardCol < BOARD_SIZE) {
+                setWhite(out);
+                out.print(EMPTY.repeat(LINE_WIDTH_IN_PADDED_CHARS));
             }
             setBlack(out);
         }
@@ -133,6 +138,62 @@ public class BoardPrintLayout {
         printChar(fileLabel);
         out.print(EMPTY.repeat(suffixLength));
         setBlack(out);
+    }
+
+    private String placePiece(int row, int col, ChessBoard board){
+        ChessPosition location = new ChessPosition(row, col);
+        ChessPiece focus = board.getPiece(location);
+        if (focus.getTeamColor()== ChessGame.TeamColor.BLACK) {
+            switch (focus.getPieceType()){
+                case KING -> {
+                    return EscapeSequences.BLACK_KING;
+                }
+                case QUEEN -> {
+                    return EscapeSequences.BLACK_QUEEN;
+                }
+                case BISHOP -> {
+                    return EscapeSequences.BLACK_BISHOP;
+                }
+                case KNIGHT -> {
+                    return BLACK_KNIGHT;
+                }
+                case ROOK -> {
+                    return BLACK_ROOK;
+                }
+                case PAWN -> {
+                    return BLACK_PAWN;
+                }
+                case null, default -> {
+                    return null;
+                }
+            }
+        }
+        else {
+            switch (focus.getPieceType()){
+                case KING -> {
+                    return EscapeSequences.WHITE_KING;
+                }
+                case QUEEN -> {
+                    return EscapeSequences.WHITE_QUEEN;
+                }
+                case BISHOP -> {
+                    return EscapeSequences.WHITE_BISHOP;
+                }
+                case KNIGHT -> {
+                    return WHITE_KNIGHT;
+                }
+                case ROOK -> {
+                    return WHITE_ROOK;
+                }
+                case PAWN -> {
+                    return WHITE_PAWN;
+                }
+                case null, default -> {
+                    return null;
+                }
+            }
+        }
+
     }
 
     private static void printChar(String Char) {
