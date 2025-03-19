@@ -6,7 +6,6 @@ import chess.ChessPiece;
 import chess.ChessPosition;
 
 import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static java.lang.System.out;
@@ -19,20 +18,6 @@ public class BoardPrintLayout {
         this.currentGame = currentGame;
     }
 
-    private static Random rand = new Random();
-
-
-
-    public static void main(String[] args) {
-        var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
-
-        out.print(ERASE_SCREEN);
-        ChessGame game = new ChessGame();
-        drawChessBoard(out, ChessGame.TeamColor.WHITE, game);
-
-        out.print(SET_BG_COLOR_BLACK);
-        out.print(SET_TEXT_COLOR_WHITE);
-    }
 
 
 
@@ -73,6 +58,9 @@ public class BoardPrintLayout {
             }
             setBlack(out);
         }
+        setWhite(out);
+        out.print(" ");
+        setBlack(out);
         out.println();
     }
     private static void drawOddRow(String fileLabel, int row, ChessBoard board) {
