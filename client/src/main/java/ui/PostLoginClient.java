@@ -1,8 +1,10 @@
 package ui;
 
+import chess.ChessGame;
 import client.ServerFacade;
 import exception.ResponseException;
 
+import java.util.Map;
 import java.util.Scanner;
 
 public class PostLoginClient {
@@ -32,7 +34,19 @@ public class PostLoginClient {
     }
 
     private String playGame() {
-        return null;
+        String teamColor = null;
+        System.out.println("Enter a Game ID>");
+        String gameId = scanner.nextLine();
+        System.out.println("Type W for white player or B for black player>");
+        String playerColor = scanner.nextLine();
+        if (playerColor.toLowerCase().strip() == "w"){
+            teamColor = "WHITE";
+        }
+        if (playerColor.toLowerCase().strip() == "b"){
+            teamColor = "BLACK";
+        }
+        Object resp = server.playGame(teamColor, gameId);
+        return resp.toString();
     }
 
     private String listGame() {
@@ -40,16 +54,20 @@ public class PostLoginClient {
     }
 
     private String createGame() {
-        return null;
+        System.out.println("Enter a Game Name>");
+        String gameName = scanner.nextLine();
+        Object resp = server.createGame(gameName);
+        return resp.toString();
     }
 
-    private String logout() {
-        return null;
+    private void logout() throws ResponseException {
+        server.logout();
     }
 
     private String quit() {
         return "quit";
     }
+
     private String help() {
         return """
                 - Help : Displays text informing the user what actions they can take.

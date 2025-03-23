@@ -1,10 +1,7 @@
 package client;
 import chess.ChessGame;
-import chess.ChessMove;
 import com.google.gson.Gson;
 import exception.ResponseException;
-import model.GameData;
-import spark.Response;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -86,12 +83,19 @@ public class ServerFacade {
         authToken = null;
     }
 
-    public Object createGame() {
-        return null;
+    public Object createGame(String gameName) throws ResponseException {
+        Map<String, String> body = Map.of(
+                "gameName", gameName);
+        String jsonBody = gson.toJson(body);
+        Map resp = request("POST", "/session", jsonBody);
+        return resp.toString();
     }
 
-    public Object playGame() {
-        return null;
+    public Object playGame(String teamColor, String gameId) {
+        Map<String, String> body = Map.of(
+                "playerColor", teamColor,
+                "gameID", gameId);
+        String jsonBody = gson.toJson(body);
     }
 
     public Object observeGame() {
