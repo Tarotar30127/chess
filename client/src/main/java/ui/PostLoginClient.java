@@ -22,11 +22,13 @@ public class PostLoginClient {
             case 4 -> listGame();
             case 5 -> playGame();
             case 6 -> observerGame();
+            case 7 -> quit();
             default -> "Invalid command";
         };
     }
 
     private String observerGame() {
+        return null;
     }
 
     private String playGame() {
@@ -42,10 +44,22 @@ public class PostLoginClient {
     }
 
     private String logout() {
+        return null;
     }
 
+    private String quit() {
+        return "quit";
+    }
     private String help() {
-        return null;
+        return """
+                - Help : Displays text informing the user what actions they can take.
+                - Quit : Exits the program.
+                - Logout : Logs out the user
+                - createGame : <Game Name>
+                - listGame : Creates a list of games
+                - playGame : <ID> [White|Black]
+                - observe : <ID>
+               """;
     }
 }
 
