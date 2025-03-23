@@ -81,7 +81,21 @@ public class ServerFacade {
         authToken = (String) resp.get("authToken");
         return resp.toString();
     }
-    public Object logout
+    public void logout() throws ResponseException {
+        Map resp = request("POST", "/session", null);
+        authToken = null;
+    }
 
+    public Object createGame() {
+        return null;
+    }
+
+    public Object playGame() {
+        return null;
+    }
+
+    public Object observeGame() {
+        return null;
+    }
 
 }

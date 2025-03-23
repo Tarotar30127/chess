@@ -8,7 +8,6 @@ import java.util.Scanner;
 
 public class PreLoginClient {
     private final Scanner scanner = new Scanner(System.in);
-    private final Gson gson = new Gson();
     private ServerFacade server;
 
     public PreLoginClient(String serverUrl) {
@@ -52,8 +51,6 @@ public class PreLoginClient {
         } catch (ResponseException e) {
             return "Login failed: " + e.getMessage();
         }
-
-
     }
 
     private String quit() {

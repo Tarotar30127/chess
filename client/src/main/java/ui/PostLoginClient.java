@@ -1,36 +1,51 @@
 package ui;
 
+import client.ServerFacade;
+import exception.ResponseException;
+
+import java.util.Scanner;
+
 public class PostLoginClient {
-        private String visitorName = null;
-        private final ServerFacade server;
-        private final String serverUrl;
-        private final NotificationHandler notificationHandler;
-        private State state = State.SIGNEDOUT;
+    private final Scanner scanner = new Scanner(System.in);
+    private ServerFacade server;
 
     public PostLoginClient(String serverUrl) {
-            server = new ServerFacade(serverUrl);
-            this.serverUrl = serverUrl;
-            this.notificationHandler = notificationHandler;
-        }
-
-        public String eval(String in) {
-            try {
-                var tokens = in.toLowerCase().split(" ");
-                var cmd = (tokens.length > 0) ? tokens[0] : "help";
-                var params = Arrays.copyOfRange(tokens, 1, tokens.length);
-                return switch (cmd) {
-                    case "signin" -> signIn(params);
-                    case "rescue" -> rescuePet(params);
-                    case "list" -> listPets();
-                    case "signout" -> signOut();
-                    case "adopt" -> adoptPet(params);
-                    case "adoptall" -> adoptAllPets();
-                    case "quit" -> "quit";
-                    default -> help();
-                };
-            } catch (ResponseException ex) {
-                return ex.getMessage();
-            }
-        }
+        this.server = new ServerFacade(serverUrl);
     }
+
+    public String eval(String in) {
+        int number = Integer.parseInt(in.strip());
+        return switch (number){
+            case 1 -> help();
+            case 2 -> logout();
+            case 3 -> createGame();
+            case 4 -> listGame();
+            case 5 -> playGame();
+            case 6 -> observerGame();
+            default -> "Invalid command";
+        };
+    }
+
+    private String observerGame() {
+    }
+
+    private String playGame() {
+        return null;
+    }
+
+    private String listGame() {
+        return null;
+    }
+
+    private String createGame() {
+        return null;
+    }
+
+    private String logout() {
+    }
+
+    private String help() {
+        return null;
+    }
+}
 
