@@ -15,7 +15,7 @@ public class PostLoginClient {
         this.server = new ServerFacade(serverUrl);
     }
 
-    public String eval(String in) {
+    public String eval(String in) throws ResponseException {
         int number = Integer.parseInt(in.strip());
         return switch (number){
             case 1 -> help();
@@ -30,13 +30,16 @@ public class PostLoginClient {
     }
 
     private String observerGame() {
-        return null;
-    }
-
-    private String playGame() {
-        String teamColor = null;
         System.out.println("Enter a Game ID>");
         String gameId = scanner.nextLine();
+        Object resp = server.observeGame(gameId);
+        return resp.toString();
+    }
+
+    private String playGame() throws ResponseException {
+        String teamColor = null;
+        System.out.println("Enter a Game ID>");
+        int gameId = Integer.parseInt(scanner.nextLine());
         System.out.println("Type W for white player or B for black player>");
         String playerColor = scanner.nextLine();
         if (playerColor.toLowerCase().strip() == "w"){
@@ -49,19 +52,21 @@ public class PostLoginClient {
         return resp.toString();
     }
 
-    private String listGame() {
-        return null;
+    private String listGame() throws ResponseException {
+        Object resp = server.listGame();
+        return resp.toString();
     }
 
-    private String createGame() {
+    private String createGame() throws ResponseException {
         System.out.println("Enter a Game Name>");
         String gameName = scanner.nextLine();
         Object resp = server.createGame(gameName);
         return resp.toString();
     }
 
-    private void logout() throws ResponseException {
-        server.logout();
+    private String logout() throws ResponseException {
+        Object resp = server.logout();
+        return resp.toString();
     }
 
     private String quit() {

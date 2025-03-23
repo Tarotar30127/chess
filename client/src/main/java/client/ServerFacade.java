@@ -1,5 +1,4 @@
 package client;
-import chess.ChessGame;
 import com.google.gson.Gson;
 import exception.ResponseException;
 
@@ -20,6 +19,7 @@ public class ServerFacade {
     public ServerFacade(String serverDomain) {
         this.baseUrl = "http://" + serverDomain;
     }
+
     private Map request(String method, String endpoint, String body) throws ResponseException {
         try {
             HttpURLConnection http = makeConnection(method, endpoint, body);
@@ -63,7 +63,7 @@ public class ServerFacade {
             return null;
         }
         authToken = (String) resp.get("authToken");
-        return resp.toString();
+        return resp;
     }
 
     public Object login(String username, String password) throws ResponseException {
@@ -76,30 +76,42 @@ public class ServerFacade {
             return null;
         }
         authToken = (String) resp.get("authToken");
-        return resp.toString();
+        return resp;
     }
-    public void logout() throws ResponseException {
+    public Object logout() throws ResponseException {
         Map resp = request("POST", "/session", null);
         authToken = null;
+        return resp;
     }
 
     public Object createGame(String gameName) throws ResponseException {
         Map<String, String> body = Map.of(
                 "gameName", gameName);
         String jsonBody = gson.toJson(body);
-        Map resp = request("POST", "/session", jsonBody);
-        return resp.toString();
+        Map resp = request("POST", "/game", jsonBody);
+        return resp;
     }
 
-    public Object playGame(String teamColor, String gameId) {
-        Map<String, String> body = Map.of(
+    public Object playGame(String teamColor, int gameId) throws ResponseException {
+        Map<String, Object> body = Map.of(
                 "playerColor", teamColor,
                 "gameID", gameId);
         String jsonBody = gson.toJson(body);
+        Map resp = request("PUT", "/game", jsonBody);
+        return resp;
     }
 
-    public Object observeGame() {
-        return null;
+    public Object observeGame(String gameId) throws ResponseException {
+        Map<String, Object> body = Map.of(
+            "playerColor", null,
+            "gameID", gameId);
+        String jsonBody = gson.toJson(body);
+        Map resp = request("PUT", "/game", jsonBody);
+        return resp;
     }
 
+    public Object listGame() throws ResponseException {
+        Map resp = request("GET", "/game", null);
+        return resp;
+    }
 }
