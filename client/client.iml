@@ -14,5 +14,6 @@
     <orderEntry type="library" name="junit.jupiter" level="project" />
     <orderEntry type="library" name="apache.spark.repl_2.12" level="project" />
     <orderEntry type="library" name="sparkjava.spark.core1" level="project" />
+    <orderEntry type="library" name="glassfish.tyrus.bundles.standalone.client" level="project" />
   </component>
 </module>

@@ -1,9 +1,13 @@
 package ui;
 
 import client.Notifications;
+import client.WebSocketFacade;
+
 import java.util.Scanner;
 
 public class Repl implements Notifications {
+    private final String serverUrl;
+
     public enum State {
         SIGNEDOUT,
         SIGNEDIN
@@ -17,8 +21,8 @@ public class Repl implements Notifications {
     private String result = "";
 
     public Repl(String serverUrl) {
-        preClient = new PreLoginClient(serverUrl, this);
-        postClient = new PostLoginClient(serverUrl, this);
+        preClient = new PreLoginClient(serverUrl);
+        postClient = new PostLoginClient(serverUrl);
     }
 
     @Override

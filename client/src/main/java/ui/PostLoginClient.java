@@ -7,7 +7,7 @@ public class PostLoginClient {
         private final NotificationHandler notificationHandler;
         private State state = State.SIGNEDOUT;
 
-    public PostLoginClient(String serverUrl, Repl rep) {
+    public PostLoginClient(String serverUrl) {
             server = new ServerFacade(serverUrl);
             this.serverUrl = serverUrl;
             this.notificationHandler = notificationHandler;
