@@ -74,7 +74,7 @@ public class ServerHandler {
     private static Collection<GamesList> getJsonGames(Collection<GameData> games) {
         ArrayList<GamesList> gamesList = new ArrayList<>();
         for (GameData game: games){
-            GamesList gameList = new GamesList(game.gameId(), game.whiteUserName(), game.blackUserName(), game.gameName());
+            GamesList gameList = new GamesList(game.gameId(), game.whiteUserName(), game.blackUserName(), game.gameName(), game.game());
             gamesList.add(gameList);
         }
         return gamesList;
