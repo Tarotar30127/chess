@@ -2,7 +2,6 @@ package client;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.AuthData;
-import model.GamesList;
 
 
 import java.io.*;
@@ -141,14 +140,14 @@ public class ServerFacade {
         return null;
     }
 
-    public Collection<GamesList> listGame(AuthData userauth) throws ResponseException {
+    public Map listGame(AuthData userauth) throws ResponseException {
         this.authToken = userauth.authToken();
-        Collection games = makeRequest("GET", "/game", null, Collection.class);
+        Map games = makeRequest("GET", "/game", null, Map.class);
         return games;
     }
 
     public void clear() throws ResponseException {
-        Object resp= makeRequest("DELETE", "/db", null, null);
+        Object resp = makeRequest("DELETE", "/db", null, Object.class);
     }
 
 

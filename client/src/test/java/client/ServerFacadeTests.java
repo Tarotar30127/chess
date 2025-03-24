@@ -2,18 +2,14 @@ package client;
 
 import exception.ResponseException;
 import model.AuthData;
-import model.GamesList;
 import org.junit.jupiter.api.*;
 
-import static java.lang.Integer.parseInt;
 import static org.junit.jupiter.api.Assertions.*;
 import server.Server;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ServerFacadeTests {
 
@@ -35,8 +31,8 @@ public class ServerFacadeTests {
 
     @AfterAll
     static void stopServer() throws ResponseException {
-        server.stop();
         serverFacade.clear();
+        server.stop();
     }
 
     @Test
@@ -124,7 +120,7 @@ public class ServerFacadeTests {
         AuthData response = serverFacade.register("failUser", "1234", "hot@mail");
         serverFacade.createGame("test1", response);
         serverFacade.createGame("random", response);
-        Collection<GamesList> games = serverFacade.listGame(response);
+        Map games = serverFacade.listGame(response);
         assertNotNull(games);
         assertFalse(games.isEmpty());
     }
