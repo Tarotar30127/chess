@@ -2,7 +2,6 @@ package ui;
 
 import client.Notifications;
 import model.AuthData;
-import org.apache.spark.sql.execution.columnar.NULL;
 
 import java.util.Scanner;
 import java.util.regex.Matcher;

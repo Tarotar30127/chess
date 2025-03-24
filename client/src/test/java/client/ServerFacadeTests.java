@@ -17,10 +17,9 @@ public class ServerFacadeTests {
 
     private static Server server;
     private static ServerFacade serverFacade;
-    private static AuthData authData;
 
     @BeforeAll
-    public static void init() throws ResponseException, IOException, URISyntaxException {
+    public static void init() {
         server = new Server();
         var port = server.run(0);
         System.out.println("Started test HTTP server on " + port);
@@ -97,7 +96,6 @@ public class ServerFacadeTests {
         Matcher matcher = pattern.matcher(gameIdStr);
         if (matcher.find()) {
             int extractedGameId = Integer.parseInt(matcher.group(1));
-            System.out.println(gameId.toString());
             Object white = serverFacade.playGame("WHITE", extractedGameId, response);
             assertNotNull(white);
         }
@@ -111,7 +109,7 @@ public class ServerFacadeTests {
 
     @Test
     @Order(1)
-    public void observeGame_methodPass() throws ResponseException, IOException, URISyntaxException {
+    public void observeGame_methodPass() throws ResponseException {
         AuthData response = serverFacade.register("failUser", "1234", "hot@mail");
         Object gameId = serverFacade.createGame("test", response);
         Object object = serverFacade.observeGame(1, response);
