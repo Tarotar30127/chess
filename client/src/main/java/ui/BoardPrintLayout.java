@@ -63,14 +63,22 @@ public class BoardPrintLayout {
         out.println();
     }
     private static void drawOddRow(String fileLabel, int row, ChessBoard board) {
+        dup(fileLabel, row, board, SET_BG_COLOR_WHITE, SET_BG_COLOR_LIGHT_GREY);
+    }
+
+    private static void drawEvenRow(String fileLabel, int row, ChessBoard board) {
+        dup(fileLabel, row, board, SET_BG_COLOR_LIGHT_GREY, SET_BG_COLOR_WHITE);
+    }
+
+    private static void dup(String fileLabel, int row, ChessBoard board, String setBgColorLightGrey, String setBgColorWhite) {
         drawFileLabel(fileLabel);
         for (int col = 1; col <= 8; col++) {
             if (col % 2 == 0){
-                out.print(SET_BG_COLOR_WHITE);
+                out.print(setBgColorLightGrey);
                 out.print(SET_TEXT_COLOR_BLACK);
             }
             if (col % 2 == 1){
-                out.print(SET_BG_COLOR_LIGHT_GREY);
+                out.print(setBgColorWhite);
                 out.print(SET_TEXT_COLOR_BLACK);
             }
             placePiece(row, col, board);
@@ -80,25 +88,6 @@ public class BoardPrintLayout {
         drawFileLabel(fileLabel);
         out.println();
     }
-
-    private static void drawEvenRow(String fileLabel, int row, ChessBoard board) {
-        drawFileLabel(fileLabel);
-        for (int col = 1; col <= 8; col++) {
-            if (col % 2 == 0){
-                out.print(SET_BG_COLOR_LIGHT_GREY);
-                out.print(SET_TEXT_COLOR_BLACK);
-            }
-            if (col % 2 == 1){
-                out.print(SET_BG_COLOR_WHITE);
-                out.print(SET_TEXT_COLOR_BLACK);
-            }
-            placePiece(row, col, board);
-
-            setBlack(out);
-        }
-        drawFileLabel(fileLabel);
-        out.println();
-        }
 
     private static void drawFileLabel(String fileLabel) {
         setWhite(out);
@@ -165,11 +154,11 @@ public class BoardPrintLayout {
         }
     }
 
-    private static void printChar(String Char) {
+    private static void printChar(String s) {
     out.print(SET_BG_COLOR_WHITE);
     out.print(SET_TEXT_COLOR_BLACK);
 
-    out.print(Char);
+    out.print(s);
 
     setWhite(out);
 }

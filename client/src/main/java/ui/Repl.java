@@ -1,13 +1,12 @@
 package ui;
 
-import client.Notifications;
 import model.AuthData;
 
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Repl implements Notifications {
+public class Repl {
     public enum State {
         SIGNEDOUT,
         SIGNEDIN
@@ -15,7 +14,7 @@ public class Repl implements Notifications {
     private static State state = State.SIGNEDOUT;
     private final PreLoginClient preClient;
     private final PostLoginClient postClient;
-    private static final String White = "\u001B[15m";
+    private static final String WHITE = "\u001B[15m";
 
     private final Scanner scanner = new Scanner(System.in);
     private String result = "";
@@ -30,10 +29,6 @@ public class Repl implements Notifications {
 
     }
 
-    @Override
-    public void notify(Object notification) {
-        System.out.println("Notification: " + notification);
-    }
 
     public void run() {
         System.out.println("Welcome to Chess!\n");
@@ -83,7 +78,7 @@ public class Repl implements Notifications {
         String line = scanner.nextLine();
         try {
             result = preClient.eval(line);
-            System.out.println(White + result);
+            System.out.println(WHITE + result);
             if (result.startsWith("Login successful") || result.startsWith("Registration successful")) {
                 state = State.SIGNEDIN;
                 Pattern pattern = Pattern.compile("authToken=([^,]+), username=([^]]+)");
@@ -105,7 +100,7 @@ public class Repl implements Notifications {
         String line = scanner.nextLine();
         try {
             result = postClient.eval(line, this.userAuth);
-            System.out.println(White + result);
+            System.out.println(WHITE + result);
             if (result.equalsIgnoreCase("Logout successful")) {
                 state = State.SIGNEDOUT;
             }
