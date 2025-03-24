@@ -21,7 +21,7 @@ public class BoardPrintLayout {
 
 
 
-    private static void drawChessBoard(PrintStream out,ChessGame.TeamColor teamColor, ChessGame game) {
+    public static void drawChessBoard(PrintStream out,ChessGame.TeamColor teamColor, ChessGame game) {
         List<String> headers = new ArrayList<>(Arrays.asList("", "A", "B", "C", "D", "E", "F", "G", "H", ""));
         List<String> fileLabel = new ArrayList<>(Arrays.asList(" 1 ", " 2 ", " 3 ", " 4 ", " 5 ", " 6 ", " 7 ", " 8 "));
         ChessBoard board = game.getBoard();
@@ -56,11 +56,10 @@ public class BoardPrintLayout {
                 setWhite(out);
                 out.print(" ");
             }
-            setBlack(out);
         }
-        setWhite(out);
+        setGrey(out);
         out.print(" ");
-        setBlack(out);
+
         out.println();
     }
     private static void drawOddRow(String fileLabel, int row, ChessBoard board) {
@@ -181,8 +180,8 @@ public class BoardPrintLayout {
     }
 
     private static void setGrey(PrintStream out) {
-        out.print(SET_BG_COLOR_LIGHT_GREY);
-        out.print(SET_TEXT_COLOR_LIGHT_GREY);
+        out.print(SET_BG_COLOR_DARK_GREY);
+        out.print(SET_TEXT_COLOR_WHITE);
     }
 
     private static void setBlack(PrintStream out) {

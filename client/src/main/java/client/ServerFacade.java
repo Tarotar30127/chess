@@ -2,6 +2,9 @@ package client;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.AuthData;
+import model.GamesList;
+import org.apache.commons.math3.util.ContinuedFraction;
+import org.apache.hadoop.yarn.webapp.hamlet.HamletSpec;
 
 
 import java.io.*;
@@ -43,11 +46,16 @@ public class ServerFacade {
 
 
     private void writeBody(Object request, HttpURLConnection http) throws IOException {
-        http.setRequestProperty("authorization", this.authToken);
-        String reqData = new Gson().toJson(request);
-        System.out.println(reqData);
-        try (OutputStream reqBody = http.getOutputStream()) {
-            reqBody.write(reqData.getBytes());
+        if (request != null) {
+            http.setRequestProperty("authorization", this.authToken);
+            String reqData = new Gson().toJson(request);
+            System.out.println(reqData);
+            try (OutputStream reqBody = http.getOutputStream()) {
+                reqBody.write(reqData.getBytes());
+            }
+        }
+        else {
+            http.setRequestProperty("authorization", this.authToken);
         }
 
     }
@@ -132,16 +140,17 @@ public class ServerFacade {
 
     public Object observeGame(int gameId, AuthData userauth) throws ResponseException, IOException, URISyntaxException {
         this.authToken = userauth.authToken();
-        Map body = Map.of(
-            "gameID", gameId);
+        Map<String, Object> body = new HashMap<>();
+        body.put("playerColor", null);
+        body.put("gameID", gameId);
         Object resp = makeRequest("PUT", "/game", body, Object.class);
         return resp;
     }
 
-    public Object listGame(AuthData userauth) throws ResponseException {
+    public Collection<GamesList> listGame(AuthData userauth) throws ResponseException {
         this.authToken = userauth.authToken();
-        Map resp = makeRequest("GET", "/game", null, Map.class);
-        return resp;
+        Collection<GamesList> games = makeRequest("GET", "/game", null, Collection.class);
+        return games;
     }
 
 

@@ -23,9 +23,8 @@ public class ServerHandler {
     public Object joinGame(Request request, Response response) throws ResponseException {
         try {
             JoinColorId joinData = new Gson().fromJson(request.body(), JoinColorId.class);
-            if (joinData.gameID() == null
-                    || joinData.playerColor() == null || joinData.playerColor().isEmpty() ||
-                    !(joinData.playerColor().equals("WHITE")) && !(joinData.playerColor().equals("BLACK"))) {
+            if (joinData.gameID() == null || joinData.playerColor() == null ||
+                    !(joinData.playerColor().equals("WHITE") || joinData.playerColor().equals("BLACK"))) {
                 throw new ResponseException(400, "Error: bad request");
             }
             String authToken = request.headers("authorization");

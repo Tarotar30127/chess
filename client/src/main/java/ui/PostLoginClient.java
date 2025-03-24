@@ -1,12 +1,16 @@
 package ui;
 
+import chess.ChessGame;
 import client.ServerFacade;
 import exception.ResponseException;
 import model.AuthData;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class PostLoginClient {
     private final Scanner scanner = new Scanner(System.in);
@@ -54,6 +58,8 @@ public class PostLoginClient {
             teamColor = "BLACK";
         }
         Object resp = server.playGame(teamColor, gameId, this.userauth);
+        ChessGame game = new ChessGame();
+        BoardPrintLayout.drawChessBoard(System.out, ChessGame.TeamColor.valueOf(teamColor), game);
         return resp.toString();
     }
 
