@@ -4,6 +4,7 @@ import chess.ChessGame;
 import client.ServerFacade;
 import exception.ResponseException;
 import model.AuthData;
+import model.GameData;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -40,11 +41,15 @@ public class PostLoginClient {
         };
     }
 
-    private String observerGame() throws ResponseException, IOException, URISyntaxException {
+    private String observerGame() throws ResponseException {
         System.out.println("Enter a Game ID>");
         int gameId = parseInt(scanner.nextLine());
-        Object resp = null;
-        resp = server.observeGame(gameId, this.userauth);
+        Map resp = server.observeGame(gameId, this.userauth);
+        if (resp.containsKey("Error")) {
+            return "Game doesn't exist";
+        }
+        ChessGame game = new ChessGame();
+        BoardPrintLayout.drawChessBoard(System.out, ChessGame.TeamColor.WHITE, game);
         return resp.toString();
     }
 
@@ -64,6 +69,7 @@ public class PostLoginClient {
         Object resp = server.playGame(teamColor, correctGameId, this.userauth);
         ChessGame game = new ChessGame();
         BoardPrintLayout.drawChessBoard(System.out, ChessGame.TeamColor.valueOf(teamColor), game);
+
         return resp.toString();
     }
 

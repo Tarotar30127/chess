@@ -2,6 +2,7 @@ package client;
 
 import exception.ResponseException;
 import model.AuthData;
+import org.apache.hadoop.yarn.webapp.hamlet2.HamletSpec;
 import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -91,7 +92,7 @@ public class ServerFacadeTests {
         AuthData response = serverFacade.register("funnyUser", "1234", "hot@mail");
         Object gameId = serverFacade.createGame("test", response);
         System.out.println(gameId.toString());
-        Object white = serverFacade.playGame("WHITE", 1112, response);
+        Object white = serverFacade.playGame("WHITE", 1, response);
         assertNotNull(white);
     }
 
@@ -105,14 +106,15 @@ public class ServerFacadeTests {
     public void observeGame_methodPass() throws ResponseException, IOException, URISyntaxException {
         AuthData response = serverFacade.register("failUser", "1234", "hot@mail");
         Object gameId = serverFacade.createGame("test", response);
-        Object object = serverFacade.observeGame(1112, response);
+        Object object = serverFacade.observeGame(1, response);
         assertNotNull(object);
     }
 
     @Test
     public void observeGame_methodFail() throws ResponseException {
         AuthData response = serverFacade.register("failUser", "1234", "hot@mail");
-        assertThrows(ResponseException.class, () -> serverFacade.observeGame(-1, response));
+        Map game= serverFacade.observeGame(-1, response);
+        assertTrue(game.containsKey("Error"));
     }
 
     @Test

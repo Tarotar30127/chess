@@ -11,6 +11,8 @@ import java.net.URISyntaxException;
 
 import java.net.URL;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ServerFacade {
     private final String serverUrl;
@@ -134,10 +136,24 @@ public class ServerFacade {
         return resp;
     }
 
-    public Object observeGame(int gameId, AuthData userauth) throws ResponseException, IOException, URISyntaxException {
+    public Map observeGame(int gameId, AuthData userauth) throws ResponseException {
         this.authToken = userauth.authToken();
-        Collection games = makeRequest("GET", "/game", null, Collection.class);
-        return null;
+        Map games = makeRequest("GET", "/game", null, Map.class);
+        Object gamesObj = games.get("games");
+        List<Map<String, Object>> gamesList = (List<Map<String, Object>>) gamesObj;
+        for (Map<String, Object> gameData : gamesList) {
+            String gameDataStr = gameData.toString();
+            Pattern pattern = Pattern.compile("gameID=(\\d+)");
+            Matcher matcher = pattern.matcher(gameDataStr);
+            if (matcher.find()) {
+                int currentGameId = Integer.parseInt(matcher.group(1));
+                if (currentGameId == gameId+1111) {
+                    return gameData;
+                }
+            }
+        }
+        return Map.of(
+                "Error", "Game does not exist");
     }
 
     public Map listGame(AuthData userauth) throws ResponseException {
