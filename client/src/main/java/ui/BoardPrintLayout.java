@@ -18,9 +18,6 @@ public class BoardPrintLayout {
         this.currentGame = currentGame;
     }
 
-
-
-
     public static void drawChessBoard(PrintStream out,ChessGame.TeamColor teamColor, ChessGame game) {
         List<String> headers = new ArrayList<>(Arrays.asList("", "A", "B", "C", "D", "E", "F", "G", "H", ""));
         List<String> fileLabel = new ArrayList<>(Arrays.asList(" 1 ", " 2 ", " 3 ", " 4 ", " 5 ", " 6 ", " 7 ", " 8 "));
