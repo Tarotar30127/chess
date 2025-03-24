@@ -1,21 +1,26 @@
 package ui;
 
-import chess.ChessGame;
 import client.ServerFacade;
 import exception.ResponseException;
+import model.AuthData;
+import org.eclipse.jetty.server.UserIdentity;
 
-import java.util.Map;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Scanner;
 
 public class PostLoginClient {
     private final Scanner scanner = new Scanner(System.in);
     private ServerFacade server;
+    AuthData userauth;
 
     public PostLoginClient(String serverUrl) {
         this.server = new ServerFacade(serverUrl);
+        this.userauth = null;
     }
 
-    public String eval(String in) throws ResponseException {
+    public String eval(String in, AuthData userAuth) throws ResponseException, IOException, URISyntaxException {
+        this.userauth = userAuth;
         int number = Integer.parseInt(in.strip());
         return switch (number){
             case 1 -> help();
@@ -29,10 +34,17 @@ public class PostLoginClient {
         };
     }
 
-    private String observerGame() {
+    private String observerGame() throws ResponseException {
         System.out.println("Enter a Game ID>");
         String gameId = scanner.nextLine();
-        Object resp = server.observeGame(gameId);
+        Object resp = null;
+        try {
+            resp = server.observeGame(gameId);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
         return resp.toString();
     }
 
@@ -65,7 +77,7 @@ public class PostLoginClient {
     }
 
     private String logout() throws ResponseException {
-        Object resp = server.logout();
+        Object resp = server.logout(userauth.username());
         return resp.toString();
     }
 

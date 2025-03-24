@@ -1,8 +1,11 @@
 package ui;
 
 import client.ServerFacade;
-import com.google.gson.Gson;
 import exception.ResponseException;
+import model.AuthData;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
 
 import java.util.Scanner;
 
@@ -12,9 +15,10 @@ public class PreLoginClient {
 
     public PreLoginClient(String serverUrl) {
         this.server = new ServerFacade(serverUrl);
+
     }
 
-    public String eval(String in) {
+    public String eval(String in) throws ResponseException {
         int number = Integer.parseInt(in.strip());
         return switch (number) {
             case 1 -> help();
@@ -25,19 +29,15 @@ public class PreLoginClient {
         };
     }
 
-    private String register() {
+    private String register() throws ResponseException {
         System.out.println("Enter a UserName>");
         String userName = scanner.nextLine();
         System.out.println("Enter a Password>");
         String password = scanner.nextLine();
         System.out.println("Enter an Email>");
         String email = scanner.nextLine();
-        try {
-            Object resp = server.register(userName, password, email);
-            return "Registration successful. Auth token: " + resp;
-        } catch (ResponseException e) {
-            return "Registration failed: " + e.getMessage();
-        }
+        AuthData resp = server.register(userName, password, email);
+        return "Login successful: " + resp;
     }
 
     private String login() {
@@ -50,6 +50,10 @@ public class PreLoginClient {
             return "Login successful: " + resp;
         } catch (ResponseException e) {
             return "Login failed: " + e.getMessage();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         }
     }
 

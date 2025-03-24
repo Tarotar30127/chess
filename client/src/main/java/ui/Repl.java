@@ -1,13 +1,14 @@
 package ui;
 
 import client.Notifications;
-import client.WebSocketFacade;
+import model.AuthData;
+import org.apache.spark.sql.execution.columnar.NULL;
 
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Repl implements Notifications {
-    private final String serverUrl;
-
     public enum State {
         SIGNEDOUT,
         SIGNEDIN
@@ -15,14 +16,19 @@ public class Repl implements Notifications {
     private static State state = State.SIGNEDOUT;
     private final PreLoginClient preClient;
     private final PostLoginClient postClient;
-    private static final String BLUE = "\u001B[34m";
+    private static final String White = "\u001B[15m";
 
     private final Scanner scanner = new Scanner(System.in);
     private String result = "";
+    private AuthData userAuth;
+
+
 
     public Repl(String serverUrl) {
         preClient = new PreLoginClient(serverUrl);
         postClient = new PostLoginClient(serverUrl);
+        this.userAuth = null;
+
     }
 
     @Override
@@ -78,17 +84,32 @@ public class Repl implements Notifications {
         String line = scanner.nextLine();
         try {
             result = preClient.eval(line);
-            System.out.println(BLUE + result);
+            System.out.println(White + result);
+            if (result.startsWith("Login successful") || result.startsWith("Registration successful")) {
+                state = State.SIGNEDIN;
+                Pattern pattern = Pattern.compile("authToken=([^,]+), username=([^]]+)");
+                Matcher matcher = pattern.matcher(result);
+                if (matcher.find()) {
+                    String authToken = matcher.group(1);
+                    String username = matcher.group(2);
+                    this.userAuth = new AuthData(authToken, username);
+                }
+
+            }
         } catch (Throwable e) {
             System.out.println(e.toString());
         }
 
     }
+
     private void postLogin() {
         String line = scanner.nextLine();
         try {
-            result = postClient.eval(line);
-            System.out.println(BLUE + result);
+            result = postClient.eval(line, this.userAuth);
+            System.out.println(White + result);
+            if (result.equalsIgnoreCase("Logout successful")) {
+                state = State.SIGNEDOUT;
+            }
         } catch (Throwable e) {
             System.out.println(e.toString());
         }

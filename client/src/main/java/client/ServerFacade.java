@@ -1,94 +1,120 @@
 package client;
 import com.google.gson.Gson;
 import exception.ResponseException;
+import model.AuthData;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import java.net.URL;
 import java.util.*;
 
 public class ServerFacade {
-    private String baseUrl;
-    private String authToken;
-    private Gson gson = new Gson();
+    private final String serverUrl;
+    String authToken;
 
-    public ServerFacade(String serverDomain) {
-        this.baseUrl = "http://" + serverDomain;
+
+
+    public ServerFacade(String url) {
+        this.authToken = null;
+        serverUrl = url;
     }
 
-    private Map request(String method, String endpoint, String body) throws ResponseException {
+    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
         try {
-            HttpURLConnection http = makeConnection(method, endpoint, body);
-
-            if (http.getResponseCode() == 401) {
-                return Map.of("Error", 401);
-            }
-            try (InputStream respBody = http.getInputStream();
-                 InputStreamReader reader = new InputStreamReader(respBody)) {
-                return gson.fromJson(reader, Map.class);
-            }
-        } catch (URISyntaxException | IOException e) {
-            throw new ResponseException(500, e.getMessage());
-        }
-    }
-
-    private HttpURLConnection makeConnection(String method, String endpoint, String body) throws URISyntaxException, IOException {
-        URI uri = new URI(baseUrl + endpoint);
-        HttpURLConnection http = (HttpURLConnection) uri.toURL().openConnection();
-        http.setRequestMethod(method);
-        if (authToken != null) {
-            http.addRequestProperty("authorization", authToken);
-        }
-        if (body != null) {
+            URL url = (new URI(serverUrl + path)).toURL();
+            HttpURLConnection http = (HttpURLConnection) url.openConnection();
+            http.setRequestMethod(method);
             http.setDoOutput(true);
-            http.addRequestProperty("Content-Type", "application/json");
-            http.getOutputStream().write(body.getBytes());
+
+            writeBody(request, http);
+            http.connect();
+            throwIfNotSuccessful(http);
+            return readBody(http, responseClass);
+        } catch (ResponseException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new ResponseException(500, ex.getMessage());
         }
-        http.connect();
-        return http;
     }
 
-    public Object register(String username, String password, String email) throws ResponseException {
+
+    private void writeBody(Object request, HttpURLConnection http) throws IOException {
+        if (request != null) {
+            http.addRequestProperty("Content-Type", "application/json");
+            if (this.authToken != null && !this.authToken.isEmpty()) {
+                http.addRequestProperty("authorization", authToken);
+            }
+            String reqData = new Gson().toJson(request);
+            try (OutputStream reqBody = http.getOutputStream()) {
+                reqBody.write(reqData.getBytes());
+            }
+        }
+    }
+
+    private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, ResponseException {
+        var status = http.getResponseCode();
+        if (!isSuccessful(status)) {
+            try (InputStream respErr = http.getErrorStream()) {
+                if (respErr != null) {
+                    throw ResponseException.fromJson(respErr);
+                }
+            }
+
+            throw new ResponseException(status, "other failure: " + status);
+        }
+    }
+
+    private static <T> T readBody(HttpURLConnection http, Class<T> responseClass) throws IOException {
+        T response = null;
+        if (http.getContentLength() < 0) {
+            try (InputStream respBody = http.getInputStream()) {
+                InputStreamReader reader = new InputStreamReader(respBody);
+                if (responseClass != null) {
+                    response = new Gson().fromJson(reader, responseClass);
+                }
+            }
+        }
+        return response;
+    }
+
+
+    private boolean isSuccessful(int status) {
+        return status / 100 == 2;
+    }
+
+    public AuthData register(String username, String password, String email) throws ResponseException {
         Map<String, String> body = Map.of(
                 "username", username,
                 "password", password,
                 "email", email);
-        String jsonBody = gson.toJson(body);
-        Map resp = request("POST", "/user", jsonBody);
-        if (resp.containsKey("Error")) {
-            return null;
-        }
-        authToken = (String) resp.get("authToken");
+        AuthData resp = makeRequest("POST", "/user", body, AuthData.class);
+        this.authToken = resp.authToken();
         return resp;
     }
 
-    public Object login(String username, String password) throws ResponseException {
+    public AuthData login(String username, String password) throws ResponseException, IOException, URISyntaxException {
         Map<String, String> body = Map.of(
                 "username", username,
                 "password", password);
-        String jsonBody = gson.toJson(body);
-        Map resp = request("POST", "/session", jsonBody);
-        if (resp.containsKey("Error")) {
-            return null;
-        }
-        authToken = (String) resp.get("authToken");
+        AuthData resp = makeRequest("POST", "/session", body, AuthData.class);
+        this.authToken = resp.authToken();
         return resp;
     }
-    public Object logout() throws ResponseException {
-        Map resp = request("POST", "/session", null);
-        authToken = null;
-        return resp;
+    public Object logout(String username) throws ResponseException {
+        Map<String, String> body = Map.of(
+                "username", username);
+        return makeRequest("POST", "/session", body, null);
     }
 
     public Object createGame(String gameName) throws ResponseException {
         Map<String, String> body = Map.of(
                 "gameName", gameName);
-        String jsonBody = gson.toJson(body);
-        Map resp = request("POST", "/game", jsonBody);
+
+        Object resp = makeRequest("POST", "/game", body, Object.class);
         return resp;
     }
 
@@ -96,22 +122,23 @@ public class ServerFacade {
         Map<String, Object> body = Map.of(
                 "playerColor", teamColor,
                 "gameID", gameId);
-        String jsonBody = gson.toJson(body);
-        Map resp = request("PUT", "/game", jsonBody);
+
+        Object resp = makeRequest("PUT", "/game", body, Object.class);
         return resp;
     }
 
-    public Object observeGame(String gameId) throws ResponseException {
+    public Object observeGame(String gameId) throws ResponseException, IOException, URISyntaxException {
         Map<String, Object> body = Map.of(
             "playerColor", null,
             "gameID", gameId);
-        String jsonBody = gson.toJson(body);
-        Map resp = request("PUT", "/game", jsonBody);
+        Object resp = makeRequest("PUT", "/game", body, Object.class);
         return resp;
     }
 
     public Object listGame() throws ResponseException {
-        Map resp = request("GET", "/game", null);
+        Map resp = makeRequest("GET", "/game", null, Map.class);
         return resp;
     }
+
+
 }
