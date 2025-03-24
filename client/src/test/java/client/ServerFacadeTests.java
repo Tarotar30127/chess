@@ -2,7 +2,6 @@ package client;
 
 import exception.ResponseException;
 import model.AuthData;
-import org.apache.hadoop.yarn.webapp.hamlet2.HamletSpec;
 import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -11,6 +10,8 @@ import server.Server;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ServerFacadeTests {
 
@@ -91,9 +92,15 @@ public class ServerFacadeTests {
     public void playGame_methodPass() throws ResponseException {
         AuthData response = serverFacade.register("funnyUser", "1234", "hot@mail");
         Object gameId = serverFacade.createGame("test", response);
-        System.out.println(gameId.toString());
-        Object white = serverFacade.playGame("WHITE", 1, response);
-        assertNotNull(white);
+        String gameIdStr = gameId.toString();
+        Pattern pattern = Pattern.compile("gameID=(\\d+)");
+        Matcher matcher = pattern.matcher(gameIdStr);
+        if (matcher.find()) {
+            int extractedGameId = Integer.parseInt(matcher.group(1));
+            System.out.println(gameId.toString());
+            Object white = serverFacade.playGame("WHITE", extractedGameId, response);
+            assertNotNull(white);
+        }
     }
 
     @Test
@@ -103,6 +110,7 @@ public class ServerFacadeTests {
     }
 
     @Test
+    @Order(1)
     public void observeGame_methodPass() throws ResponseException, IOException, URISyntaxException {
         AuthData response = serverFacade.register("failUser", "1234", "hot@mail");
         Object gameId = serverFacade.createGame("test", response);

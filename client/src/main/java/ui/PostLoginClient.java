@@ -57,7 +57,7 @@ public class PostLoginClient {
         String teamColor = null;
         System.out.println("Enter a Game ID>");
         int gameId = parseInt(scanner.nextLine());
-        int correctGameId = gameId+1111;
+        int correctGameId = gameId + 1111;
         System.out.println("Type W for white player or B for black player>");
         String playerColor = scanner.nextLine();
         if (playerColor.toLowerCase().strip().equals("w")){
