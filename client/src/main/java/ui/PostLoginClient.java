@@ -3,7 +3,6 @@ package ui;
 import client.ServerFacade;
 import exception.ResponseException;
 import model.AuthData;
-import org.eclipse.jetty.server.UserIdentity;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -34,17 +33,11 @@ public class PostLoginClient {
         };
     }
 
-    private String observerGame() throws ResponseException {
+    private String observerGame() throws ResponseException, IOException, URISyntaxException {
         System.out.println("Enter a Game ID>");
-        String gameId = scanner.nextLine();
+        int gameId = Integer.parseInt(scanner.nextLine());
         Object resp = null;
-        try {
-            resp = server.observeGame(gameId);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+        resp = server.observeGame(gameId, this.userauth);
         return resp.toString();
     }
 
@@ -54,31 +47,31 @@ public class PostLoginClient {
         int gameId = Integer.parseInt(scanner.nextLine());
         System.out.println("Type W for white player or B for black player>");
         String playerColor = scanner.nextLine();
-        if (playerColor.toLowerCase().strip() == "w"){
+        if (playerColor.toLowerCase().strip().equals("w")){
             teamColor = "WHITE";
         }
-        if (playerColor.toLowerCase().strip() == "b"){
+        if (playerColor.toLowerCase().strip().equals("b")){
             teamColor = "BLACK";
         }
-        Object resp = server.playGame(teamColor, gameId);
+        Object resp = server.playGame(teamColor, gameId, this.userauth);
         return resp.toString();
     }
 
     private String listGame() throws ResponseException {
-        Object resp = server.listGame();
+        Object resp = server.listGame(this.userauth);
         return resp.toString();
     }
 
     private String createGame() throws ResponseException {
         System.out.println("Enter a Game Name>");
         String gameName = scanner.nextLine();
-        Object resp = server.createGame(gameName);
+        Object resp = server.createGame(gameName, this.userauth);
         return resp.toString();
     }
 
     private String logout() throws ResponseException {
-        Object resp = server.logout(userauth.username());
-        return resp.toString();
+        Object resp = server.logout(userauth);
+        return resp != null ? resp.toString() : "Logout successful";
     }
 
     private String quit() {

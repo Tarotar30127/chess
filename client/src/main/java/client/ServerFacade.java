@@ -43,16 +43,13 @@ public class ServerFacade {
 
 
     private void writeBody(Object request, HttpURLConnection http) throws IOException {
-        if (request != null) {
-            http.addRequestProperty("Content-Type", "application/json");
-            if (this.authToken != null && !this.authToken.isEmpty()) {
-                http.addRequestProperty("authorization", authToken);
-            }
-            String reqData = new Gson().toJson(request);
-            try (OutputStream reqBody = http.getOutputStream()) {
-                reqBody.write(reqData.getBytes());
-            }
+        http.setRequestProperty("authorization", this.authToken);
+        String reqData = new Gson().toJson(request);
+        System.out.println(reqData);
+        try (OutputStream reqBody = http.getOutputStream()) {
+            reqBody.write(reqData.getBytes());
         }
+
     }
 
     private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, ResponseException {
@@ -69,16 +66,17 @@ public class ServerFacade {
     }
 
     private static <T> T readBody(HttpURLConnection http, Class<T> responseClass) throws IOException {
-        T response = null;
-        if (http.getContentLength() < 0) {
-            try (InputStream respBody = http.getInputStream()) {
-                InputStreamReader reader = new InputStreamReader(respBody);
-                if (responseClass != null) {
-                    response = new Gson().fromJson(reader, responseClass);
-                }
+        if (http.getContentLength() == 0 || http.getResponseCode() == 204) {
+            return null;
+        }
+
+        try (InputStream respBody = http.getInputStream()) {
+            InputStreamReader reader = new InputStreamReader(respBody);
+            if (responseClass != null) {
+                return new Gson().fromJson(reader, responseClass);
             }
         }
-        return response;
+        return null;
     }
 
 
@@ -101,16 +99,20 @@ public class ServerFacade {
                 "username", username,
                 "password", password);
         AuthData resp = makeRequest("POST", "/session", body, AuthData.class);
+
         this.authToken = resp.authToken();
         return resp;
     }
-    public Object logout(String username) throws ResponseException {
-        Map<String, String> body = Map.of(
-                "username", username);
-        return makeRequest("POST", "/session", body, null);
+    public Object logout(AuthData userauth) throws ResponseException {
+        this.authToken = userauth.authToken();
+        System.out.println(this.authToken);
+        Object resp = makeRequest("DELETE", "/session", null, null);
+        this.authToken = null;
+        return resp;
     }
 
-    public Object createGame(String gameName) throws ResponseException {
+    public Object createGame(String gameName, AuthData userauth) throws ResponseException {
+        this.authToken = userauth.authToken();
         Map<String, String> body = Map.of(
                 "gameName", gameName);
 
@@ -118,7 +120,8 @@ public class ServerFacade {
         return resp;
     }
 
-    public Object playGame(String teamColor, int gameId) throws ResponseException {
+    public Object playGame(String teamColor, int gameId, AuthData userauth) throws ResponseException {
+        this.authToken = userauth.authToken();
         Map<String, Object> body = Map.of(
                 "playerColor", teamColor,
                 "gameID", gameId);
@@ -127,15 +130,16 @@ public class ServerFacade {
         return resp;
     }
 
-    public Object observeGame(String gameId) throws ResponseException, IOException, URISyntaxException {
-        Map<String, Object> body = Map.of(
-            "playerColor", null,
+    public Object observeGame(int gameId, AuthData userauth) throws ResponseException, IOException, URISyntaxException {
+        this.authToken = userauth.authToken();
+        Map body = Map.of(
             "gameID", gameId);
         Object resp = makeRequest("PUT", "/game", body, Object.class);
         return resp;
     }
 
-    public Object listGame() throws ResponseException {
+    public Object listGame(AuthData userauth) throws ResponseException {
+        this.authToken = userauth.authToken();
         Map resp = makeRequest("GET", "/game", null, Map.class);
         return resp;
     }
