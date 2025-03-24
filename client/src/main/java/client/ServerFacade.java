@@ -3,8 +3,6 @@ import com.google.gson.Gson;
 import exception.ResponseException;
 import model.AuthData;
 import model.GamesList;
-import org.apache.commons.math3.util.ContinuedFraction;
-import org.apache.hadoop.yarn.webapp.hamlet.HamletSpec;
 
 
 import java.io.*;
@@ -74,17 +72,16 @@ public class ServerFacade {
     }
 
     private static <T> T readBody(HttpURLConnection http, Class<T> responseClass) throws IOException {
-        if (http.getContentLength() == 0 || http.getResponseCode() == 204) {
-            return null;
-        }
-
-        try (InputStream respBody = http.getInputStream()) {
-            InputStreamReader reader = new InputStreamReader(respBody);
-            if (responseClass != null) {
-                return new Gson().fromJson(reader, responseClass);
+        T response = null;
+        if (http.getContentLength() < 0) {
+            try (InputStream respBody = http.getInputStream()) {
+                InputStreamReader reader = new InputStreamReader(respBody);
+                if (responseClass != null) {
+                    response = new Gson().fromJson(reader, responseClass);
+                }
             }
         }
-        return null;
+        return response;
     }
 
 
@@ -140,17 +137,18 @@ public class ServerFacade {
 
     public Object observeGame(int gameId, AuthData userauth) throws ResponseException, IOException, URISyntaxException {
         this.authToken = userauth.authToken();
-        Map<String, Object> body = new HashMap<>();
-        body.put("playerColor", null);
-        body.put("gameID", gameId);
-        Object resp = makeRequest("PUT", "/game", body, Object.class);
-        return resp;
+        Collection games = makeRequest("GET", "/game", null, Collection.class);
+        return null;
     }
 
     public Collection<GamesList> listGame(AuthData userauth) throws ResponseException {
         this.authToken = userauth.authToken();
-        Collection<GamesList> games = makeRequest("GET", "/game", null, Collection.class);
+        Collection games = makeRequest("GET", "/game", null, Collection.class);
         return games;
+    }
+
+    public void clear() throws ResponseException {
+        Object resp= makeRequest("DELETE", "/db", null, null);
     }
 
 
