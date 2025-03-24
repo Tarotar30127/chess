@@ -37,20 +37,20 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void register_methodPass() throws ResponseException {
+    public void registerPass() throws ResponseException {
         AuthData response = serverFacade.register("tako", "1234", "fun@hot.com");
         assertNotNull(response);
         assertNotNull(response.authToken());
     }
 
     @Test
-    public void register_methodFail() throws ResponseException {
+    public void registerFail() throws ResponseException {
         AuthData response = serverFacade.register("failUser", "1234", "hot@mail");
         assertThrows(ResponseException.class, () -> serverFacade.register("failUser", "", ""));
     }
 
     @Test
-    public void login_methodPass() throws ResponseException, IOException, URISyntaxException {
+    public void loginPass() throws ResponseException, IOException, URISyntaxException {
         AuthData response = serverFacade.register("funnyUser", "1234", "hot@mail");
         serverFacade.logout(response);
         AuthData responds = serverFacade.login("funnyUser", "1234");
@@ -59,36 +59,36 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void login_methodFail() {
+    public void loginFail() {
         assertThrows(ResponseException.class, () -> serverFacade.login("funnyUser", "wrongPass"));
     }
 
     @Test
-    public void logout_methodPass() throws ResponseException {
+    public void logoutPass() throws ResponseException {
         AuthData response = serverFacade.register("funnyUser", "1234", "hot@mail");
         Object responds = serverFacade.logout(response);
         assertNull(responds);
     }
 
     @Test
-    public void logout_methodFail() {
+    public void logoutFail() {
         assertThrows(ResponseException.class, () -> serverFacade.logout(new AuthData(null, null)));
     }
 
     @Test
-    public void createGame_methodPass() throws ResponseException {
+    public void createGamePass() throws ResponseException {
         AuthData response = serverFacade.register("funnyUser", "1234", "hot@mail");
         Object responds = serverFacade.createGame("LOL Game", response);
         assertNotNull(responds);
     }
 
     @Test
-    public void createGame_methodFail() {
+    public void createGameFail() {
         assertThrows(ResponseException.class, () -> serverFacade.createGame("LOL Game", new AuthData(null, null)));
     }
 
     @Test
-    public void playGame_methodPass() throws ResponseException {
+    public void playGamePass() throws ResponseException {
         AuthData response = serverFacade.register("funnyUser", "1234", "hot@mail");
         Object gameId = serverFacade.createGame("test", response);
         String gameIdStr = gameId.toString();
@@ -102,14 +102,14 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void playGame_methodFail() throws ResponseException {
+    public void playGameFail() throws ResponseException {
         AuthData response = serverFacade.register("funnyUser", "1234", "hot@mail");
         assertThrows(ResponseException.class, () -> serverFacade.playGame("WHITE", -1, response));
     }
 
     @Test
     @Order(1)
-    public void observeGame_methodPass() throws ResponseException {
+    public void observeGamePass() throws ResponseException {
         AuthData response = serverFacade.register("failUser", "1234", "hot@mail");
         Object gameId = serverFacade.createGame("test", response);
         Object object = serverFacade.observeGame(1, response);
@@ -117,14 +117,14 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void observeGame_methodFail() throws ResponseException {
+    public void observeGameFail() throws ResponseException {
         AuthData response = serverFacade.register("failUser", "1234", "hot@mail");
         Map game= serverFacade.observeGame(-1, response);
         assertTrue(game.containsKey("Error"));
     }
 
     @Test
-    public void listGame_methodPass() throws ResponseException {
+    public void listGamePass() throws ResponseException {
         AuthData response = serverFacade.register("failUser", "1234", "hot@mail");
         serverFacade.createGame("test1", response);
         serverFacade.createGame("random", response);
@@ -134,7 +134,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void listGame_methodFail() {
+    public void listGameFail() {
         assertThrows(ResponseException.class, () -> serverFacade.listGame(new AuthData(null, null)));
     }
 }
