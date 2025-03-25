@@ -32,19 +32,39 @@ public class PreLoginClient {
     private String register() throws ResponseException {
         System.out.println("Enter a UserName>");
         String userName = scanner.nextLine();
+        if (userName == null) {
+            return "invalid name";
+        }
         System.out.println("Enter a Password>");
         String password = scanner.nextLine();
+        if (password == null) {
+            return "invalid password";
+        }
         System.out.println("Enter an Email>");
         String email = scanner.nextLine();
-        AuthData resp = server.register(userName, password, email);
+        if (email == null) {
+            return "invalid email";
+        }
+        AuthData resp = null;
+        try {
+            resp = server.register(userName, password, email);
+        } catch (ResponseException e) {
+            throw new RuntimeException(e);
+        }
         return "Registration successful: " + resp;
     }
 
     private String login() {
         System.out.println("Enter Username>");
         String userName = scanner.nextLine();
+        if (userName == null) {
+            return "invalid name";
+        }
         System.out.println("Enter Password>");
         String password = scanner.nextLine();
+        if (password == null) {
+            return "invalid password";
+        }
         try {
             Object resp = server.login(userName, password);
             return "Login successful: " + resp;

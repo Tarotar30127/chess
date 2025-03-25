@@ -60,8 +60,11 @@ public class PostLoginClient {
         if (playerColor.toLowerCase().strip().equals("w")){
             teamColor = "WHITE";
         }
-        if (playerColor.toLowerCase().strip().equals("b")){
+        else if (playerColor.toLowerCase().strip().equals("b")){
             teamColor = "BLACK";
+        }
+        else{
+            return "Not a valid color";
         }
         Object resp = server.playGame(teamColor, correctGameId, this.userauth);
         ChessGame game = new ChessGame();
