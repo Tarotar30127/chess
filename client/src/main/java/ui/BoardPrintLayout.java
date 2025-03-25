@@ -39,6 +39,7 @@ public class BoardPrintLayout {
 
         }
         drawHeaders(headers);
+        out.print(RESET_TEXT_COLOR);
 
     }
 
@@ -54,9 +55,9 @@ public class BoardPrintLayout {
                 out.print(" ");
             }
         }
-        setGrey(out);
         out.print(" ");
-
+        out.print(RESET_BG_COLOR);
+        out.print(" ");
         out.println();
     }
     private static void drawOddRow(String fileLabel, int row, ChessBoard board) {
@@ -89,7 +90,8 @@ public class BoardPrintLayout {
     private static void drawFileLabel(String fileLabel) {
         setWhite(out);
         printChar(fileLabel);
-        setBlack(out);
+        out.print(RESET_BG_COLOR);
+
     }
 
     private static void placePiece(int row, int col, ChessBoard board){

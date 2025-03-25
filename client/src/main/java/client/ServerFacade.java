@@ -48,7 +48,6 @@ public class ServerFacade {
         if (request != null) {
             http.setRequestProperty("authorization", this.authToken);
             String reqData = new Gson().toJson(request);
-            System.out.println(reqData);
             try (OutputStream reqBody = http.getOutputStream()) {
                 reqBody.write(reqData.getBytes());
             }
@@ -105,13 +104,11 @@ public class ServerFacade {
                 "username", username,
                 "password", password);
         AuthData resp = makeRequest("POST", "/session", body, AuthData.class);
-
         this.authToken = resp.authToken();
         return resp;
     }
     public Object logout(AuthData userauth) throws ResponseException {
         this.authToken = userauth.authToken();
-        System.out.println(this.authToken);
         Object resp = makeRequest("DELETE", "/session", null, null);
         this.authToken = null;
         return resp;

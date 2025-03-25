@@ -37,7 +37,7 @@ public class PreLoginClient {
         System.out.println("Enter an Email>");
         String email = scanner.nextLine();
         AuthData resp = server.register(userName, password, email);
-        return "Login successful: " + resp;
+        return "Registration successful: " + resp;
     }
 
     private String login() {

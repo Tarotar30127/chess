@@ -4,10 +4,7 @@ import chess.ChessGame;
 import client.ServerFacade;
 import exception.ResponseException;
 import model.AuthData;
-import model.GameData;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -26,7 +23,7 @@ public class PostLoginClient {
         this.userauth = null;
     }
 
-    public String eval(String in, AuthData userAuth) throws ResponseException, IOException, URISyntaxException {
+    public String eval(String in, AuthData userAuth) throws ResponseException {
         this.userauth = userAuth;
         int number = parseInt(in.strip());
         return switch (number){
@@ -50,7 +47,7 @@ public class PostLoginClient {
         }
         ChessGame game = new ChessGame();
         BoardPrintLayout.drawChessBoard(System.out, ChessGame.TeamColor.WHITE, game);
-        return resp.toString();
+        return "success";
     }
 
     private String playGame() throws ResponseException {
@@ -70,7 +67,7 @@ public class PostLoginClient {
         ChessGame game = new ChessGame();
         BoardPrintLayout.drawChessBoard(System.out, ChessGame.TeamColor.valueOf(teamColor), game);
 
-        return resp.toString();
+        return "Successfully";
     }
 
     private String listGame() throws ResponseException {

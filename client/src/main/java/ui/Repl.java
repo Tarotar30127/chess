@@ -78,7 +78,7 @@ public class Repl {
         String line = scanner.nextLine();
         try {
             result = preClient.eval(line);
-            System.out.println(WHITE + result);
+            System.out.println(WHITE + "Successful");
             if (result.startsWith("Login successful") || result.startsWith("Registration successful")) {
                 state = State.SIGNEDIN;
                 Pattern pattern = Pattern.compile("authToken=([^,]+), username=([^]]+)");
@@ -88,12 +88,10 @@ public class Repl {
                     String username = matcher.group(2);
                     this.userAuth = new AuthData(authToken, username);
                 }
-
             }
         } catch (Throwable e) {
             System.out.println(e.toString());
         }
-
     }
 
     private void postLogin() {
