@@ -79,8 +79,8 @@ public class PostLoginClient {
         StringBuilder out = new StringBuilder();
         System.out.printf("  Game ID  []  Game Name  []  White User  []  Black User %n");
         Pattern gamePattern = Pattern.compile("gameID=(\\d+).*?gameName=(\\w+)", Pattern.DOTALL);
-        Pattern whitePlayerPattern = Pattern.compile("whiteUserName=(\\w*)");
-        Pattern blackPlayerPattern = Pattern.compile("blackUserName=(\\w*)");
+        Pattern whitePlayerPattern = Pattern.compile("whiteUsername=(\\w*)");
+        Pattern blackPlayerPattern = Pattern.compile("blackUsername=(\\w*)");
         for (Map<String, Object> gameData : games) {
             String gameDataStr = gameData.toString();
             Matcher gameMatcher = gamePattern.matcher(gameDataStr);
