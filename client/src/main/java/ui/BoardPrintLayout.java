@@ -8,7 +8,6 @@ import chess.ChessPosition;
 import java.io.PrintStream;
 import java.util.*;
 
-import static java.lang.System.out;
 import static ui.EscapeSequences.*;
 
 public class BoardPrintLayout {
@@ -19,82 +18,83 @@ public class BoardPrintLayout {
     }
 
     public static void drawChessBoard(PrintStream out,ChessGame.TeamColor teamColor, ChessGame game) {
-        List<String> headers = new ArrayList<>(Arrays.asList("", "A", "B", "C", "D", "E", "F", "G", "H", ""));
-        List<String> fileLabel = new ArrayList<>(Arrays.asList(" 1 ", " 2 ", " 3 ", " 4 ", " 5 ", " 6 ", " 7 ", " 8 "));
-        ChessBoard board = game.getBoard();
-        if (teamColor == ChessGame.TeamColor.BLACK) {
-            Collections.reverse(headers);
-            Collections.reverse(fileLabel);
+        if (teamColor == ChessGame.TeamColor.WHITE) {
+            drawWhiteView(out, game);
+        } else {
+            drawBlackView(out, game);
         }
-
-        drawHeaders(headers);
-        int counter = 1;
-        for (String file:fileLabel){
-            if (counter % 2 == 0) {
-                drawEvenRow(file, Integer.parseInt(file.trim()), board);
-            } else {
-                drawOddRow(file, Integer.parseInt(file.trim()), board);
-            }
-            ++counter;
-
-        }
-        drawHeaders(headers);
         out.print(RESET_TEXT_COLOR);
-
+    }
+    private static void drawWhiteView(PrintStream out, ChessGame game) {
+        List<String> columns = Arrays.asList(" A ", " B ", " C ", " D ", " E ", " F ", " G ", " H ");
+        drawHeaders(out, columns);
+        ChessBoard board = game.getBoard();
+        for (int row = 8; row >= 1; row--) {
+            drawRow(out, board, row, columns);
+        }
+        drawHeaders(out, columns);
     }
 
-    private static void drawHeaders(List<String> headers) {
-        setWhite(out);
-        out.print("  ");
-        for (int i = 0; i < 10; i++) {
-            setWhite(out);
-            printChar(headers.get(i));
-            out.print(" ");
-            if (i < 9) {
-                setWhite(out);
-                out.print(" ");
-            }
+    private static void drawBlackView(PrintStream out, ChessGame game) {
+        List<String> columns = Arrays.asList(" H ", " G " , " F ", " E ", " D " , " C ", " B ", " A ");
+        drawHeaders(out, columns);
+        ChessBoard board = game.getBoard();
+        for (int row = 1; row <= 8; row++) {
+            drawRow(out, board, row, columns);
         }
-        out.print(" ");
+        drawHeaders(out, columns);
+    }
+
+    private static void drawHeaders(PrintStream out, List<String> columns) {
+        setWhite(out);
+        out.print("   ");
+        for (String col : columns) {
+            out.print(col);
+        }
+        out.print("   ");
         out.print(RESET_BG_COLOR);
-        out.print(" ");
         out.println();
     }
-    private static void drawOddRow(String fileLabel, int row, ChessBoard board) {
-        dup(fileLabel, row, board, SET_BG_COLOR_WHITE, SET_BG_COLOR_LIGHT_GREY);
+    private static void drawRow(PrintStream out, ChessBoard board, int row, List<String> columns) {
+        String rowLabel = String.valueOf(row);
+        if (row % 2 == 1) {
+            drawOddRow(out, rowLabel, row, board);
+        } else {
+            drawEvenRow(out, rowLabel, row, board);
+        }
     }
 
-    private static void drawEvenRow(String fileLabel, int row, ChessBoard board) {
-        dup(fileLabel, row, board, SET_BG_COLOR_LIGHT_GREY, SET_BG_COLOR_WHITE);
+    private static void drawOddRow(PrintStream out, String fileLabel, int row, ChessBoard board) {
+        dup(out, fileLabel, row, board, SET_BG_COLOR_WHITE, SET_BG_COLOR_LIGHT_GREY);
     }
 
-    private static void dup(String fileLabel, int row, ChessBoard board, String setBgColorLightGrey, String setBgColorWhite) {
-        drawFileLabel(fileLabel);
+    private static void drawEvenRow(PrintStream out, String fileLabel, int row, ChessBoard board) {
+        dup(out, fileLabel, row, board, SET_BG_COLOR_LIGHT_GREY, SET_BG_COLOR_WHITE);
+    }
+
+    private static void dup(PrintStream out, String fileLabel, int row, ChessBoard board, String color1, String color2) {
+        drawFileLabel(out, fileLabel);
         for (int col = 1; col <= 8; col++) {
-            if (col % 2 == 0){
-                out.print(setBgColorLightGrey);
-                out.print(SET_TEXT_COLOR_BLACK);
+            if (col % 2 == 0) {
+                out.print(color1);
+            } else {
+                out.print(color2);
             }
-            if (col % 2 == 1){
-                out.print(setBgColorWhite);
-                out.print(SET_TEXT_COLOR_BLACK);
-            }
-            placePiece(row, col, board);
-
-            setBlack(out);
+            out.print(SET_TEXT_COLOR_BLACK);
+            placePiece(out, row, col, board);
         }
-        drawFileLabel(fileLabel);
+        drawFileLabel(out, fileLabel);
         out.println();
     }
 
-    private static void drawFileLabel(String fileLabel) {
+    private static void drawFileLabel(PrintStream out, String fileLabel) {
         setWhite(out);
-        printChar(fileLabel);
+        out.print(" " + fileLabel + " ");
         out.print(RESET_BG_COLOR);
 
     }
 
-    private static void placePiece(int row, int col, ChessBoard board){
+    private static void placePiece(PrintStream out, int row, int col, ChessBoard board){
         ChessPosition location = new ChessPosition(row, col);
         ChessPiece focus = board.getPiece(location);
         if (focus == null) {
@@ -105,13 +105,13 @@ public class BoardPrintLayout {
         if (focus.getTeamColor()== ChessGame.TeamColor.BLACK) {
             switch (focus.getPieceType()){
                 case KING -> {
-                   characterPiece = EscapeSequences.BLACK_KING;
+                    characterPiece = BLACK_KING;
                 }
                 case QUEEN -> {
-                    characterPiece = EscapeSequences.BLACK_QUEEN;
+                    characterPiece = BLACK_QUEEN;
                 }
                 case BISHOP -> {
-                    characterPiece = EscapeSequences.BLACK_BISHOP;
+                    characterPiece = BLACK_BISHOP;
                 }
                 case KNIGHT -> {
                     characterPiece = BLACK_KNIGHT;
@@ -129,13 +129,13 @@ public class BoardPrintLayout {
         else if (focus.getTeamColor() == ChessGame.TeamColor.WHITE){
             switch (focus.getPieceType()){
                 case KING -> {
-                    characterPiece = EscapeSequences.WHITE_KING;
+                    characterPiece = WHITE_KING;
                 }
                 case QUEEN -> {
-                    characterPiece = EscapeSequences.WHITE_QUEEN;
+                    characterPiece = WHITE_QUEEN;
                 }
                 case BISHOP -> {
-                    characterPiece = EscapeSequences.WHITE_BISHOP;
+                    characterPiece = WHITE_BISHOP;
                 }
                 case KNIGHT -> {
                     characterPiece = WHITE_KNIGHT;
@@ -153,18 +153,16 @@ public class BoardPrintLayout {
         }
     }
 
-    private static void printChar(String s) {
-    out.print(SET_BG_COLOR_WHITE);
-    out.print(SET_TEXT_COLOR_BLACK);
-
-    out.print(s);
-
-    setWhite(out);
-}
+    private static void printChar(PrintStream out, String s) {
+        out.print(SET_BG_COLOR_WHITE);
+        out.print(SET_TEXT_COLOR_BLACK);
+        out.print(s);
+        setWhite(out);
+    }
 
     private static void setWhite(PrintStream out) {
         out.print(SET_BG_COLOR_WHITE);
-        out.print(SET_TEXT_COLOR_WHITE);
+        out.print(SET_TEXT_COLOR_BLACK);
     }
 
     private static void setGrey(PrintStream out) {
@@ -176,5 +174,7 @@ public class BoardPrintLayout {
         out.print(SET_BG_COLOR_BLACK);
         out.print(SET_TEXT_COLOR_BLACK);
     }
+
 }
+
 
