@@ -64,7 +64,7 @@ public class ServerHandler {
             Collection<GameData> games = userService.getGame(authToken);
             Collection<GamesList> gamesList = getJsonGames(games);
             response.status(200);
-            Map<String, Object> formatedGameList = new HashMap<>();
+            Map<String, Collection<GamesList>> formatedGameList = new HashMap<>();
             formatedGameList.put("games", gamesList);
             return new Gson().toJson(formatedGameList);
         } catch (Exception e) {

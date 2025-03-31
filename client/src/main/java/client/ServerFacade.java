@@ -2,6 +2,7 @@ package client;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.AuthData;
+import model.GamesList;
 
 
 import java.io.*;
@@ -15,79 +16,22 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ServerFacade {
+    private final HttpCommunicator httpCommunicator;
     private final String serverUrl;
     String authToken;
 
 
 
     public ServerFacade(String url) {
+        this.httpCommunicator = new HttpCommunicator(url);
         this.authToken = null;
         serverUrl = url;
     }
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
-        try {
-            URL url = (new URI(serverUrl + path)).toURL();
-            HttpURLConnection http = (HttpURLConnection) url.openConnection();
-            http.setRequestMethod(method);
-            http.setDoOutput(true);
-
-            writeBody(request, http);
-            http.connect();
-            throwIfNotSuccessful(http);
-            return readBody(http, responseClass);
-        } catch (ResponseException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            throw new ResponseException(500, ex.getMessage());
-        }
+        return httpCommunicator.makeRequest(method, path, request, responseClass, authToken);
     }
 
-
-    private void writeBody(Object request, HttpURLConnection http) throws IOException {
-        if (request != null) {
-            http.setRequestProperty("authorization", this.authToken);
-            String reqData = new Gson().toJson(request);
-            try (OutputStream reqBody = http.getOutputStream()) {
-                reqBody.write(reqData.getBytes());
-            }
-        }
-        else {
-            http.setRequestProperty("authorization", this.authToken);
-        }
-
-    }
-
-    private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, ResponseException {
-        var status = http.getResponseCode();
-        if (!isSuccessful(status)) {
-            try (InputStream respErr = http.getErrorStream()) {
-                if (respErr != null) {
-                    throw ResponseException.fromJson(respErr);
-                }
-            }
-
-            throw new ResponseException(status, "other failure: " + status);
-        }
-    }
-
-    private static <T> T readBody(HttpURLConnection http, Class<T> responseClass) throws IOException {
-        T response = null;
-        if (http.getContentLength() < 0) {
-            try (InputStream respBody = http.getInputStream()) {
-                InputStreamReader reader = new InputStreamReader(respBody);
-                if (responseClass != null) {
-                    response = new Gson().fromJson(reader, responseClass);
-                }
-            }
-        }
-        return response;
-    }
-
-
-    private boolean isSuccessful(int status) {
-        return status / 100 == 2;
-    }
 
     public AuthData register(String username, String password, String email) throws ResponseException {
         Map<String, String> body = Map.of(
@@ -155,7 +99,7 @@ public class ServerFacade {
 
     public Map listGame(AuthData userauth) throws ResponseException {
         this.authToken = userauth.authToken();
-        Map games = makeRequest("GET", "/game", null, Map.class);
+        Map<String, Collection<GamesList>> games = makeRequest("GET", "/game", null, Map.class);
         return games;
     }
 
