@@ -99,9 +99,10 @@ public class ServerFacade {
 
     public Map listGame(AuthData userauth) throws ResponseException {
         this.authToken = userauth.authToken();
-        Map<String, Collection<GamesList>> games = makeRequest("GET", "/game", null, Map.class);
+        Map games = makeRequest("GET", "/game", null, Map.class);
         return games;
     }
+
 
     public void clear() throws ResponseException {
         Object resp = makeRequest("DELETE", "/db", null, Object.class);
