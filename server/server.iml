@@ -19,5 +19,6 @@
     <orderEntry type="library" name="mysql.connector.java" level="project" />
     <orderEntry type="library" name="glassfish.tyrus.bundles.standalone.client1" level="project" />
     <orderEntry type="module" module-name="client" />
+    <orderEntry type="library" name="apache.spark.repl_2.12" level="project" />
   </component>
 </module>

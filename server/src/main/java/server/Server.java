@@ -13,6 +13,7 @@ public class Server {
 
     static ServerHandler serverHandler;
 
+
     public Server() {
         this.userDAO = new SQLUserDAO();
         this.authDAO = new SQLAuthDAO();
