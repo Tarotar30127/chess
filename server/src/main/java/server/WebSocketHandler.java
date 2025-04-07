@@ -146,7 +146,12 @@ public class WebSocketHandler {
         ConnectionHandler.broadcast(msg, command.getGameID());
     }
 
-    private void makeMove(Session session, Make_Move command) {
+    private void makeMove(Session session, Make_Move command) throws ResponseException {
+        String authToken = command.getAuthToken();
+        AuthData auth = service.getAuthProfile(authToken);
+        int gameId = command.getGameID();
+        GameData gameData = service.getOneGame(gameId);
+
     }
 
 
