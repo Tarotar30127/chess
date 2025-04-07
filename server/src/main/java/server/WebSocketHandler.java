@@ -1,6 +1,8 @@
 package server;
 
+import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.AuthData;
@@ -146,11 +148,19 @@ public class WebSocketHandler {
         ConnectionHandler.broadcast(msg, command.getGameID());
     }
 
-    private void makeMove(Session session, Make_Move command) throws ResponseException {
+    private void makeMove(Session session, Make_Move command) throws ResponseException, IOException {
         String authToken = command.getAuthToken();
         AuthData auth = service.getAuthProfile(authToken);
         int gameId = command.getGameID();
         GameData gameData = service.getOneGame(gameId);
+        if ((Resign.getTeamColor() != ChessGame.TeamColor.BLACK) && (Resign.getTeamColor() != ChessGame.TeamColor.WHITE)) {
+            var message = String.format("%s is a observer in the Game", auth.username());
+            var notification = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
+            error(session, notification);
+            return;
+        }
+        ChessMove newMove = command.getMove();
+
 
     }
 
