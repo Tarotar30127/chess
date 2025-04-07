@@ -3,6 +3,7 @@ package server;
 import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.AuthData;
@@ -16,6 +17,7 @@ import websocket.messages.LoadGame;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -153,14 +155,55 @@ public class WebSocketHandler {
         AuthData auth = service.getAuthProfile(authToken);
         int gameId = command.getGameID();
         GameData gameData = service.getOneGame(gameId);
-        if ((Resign.getTeamColor() != ChessGame.TeamColor.BLACK) && (Resign.getTeamColor() != ChessGame.TeamColor.WHITE)) {
-            var message = String.format("%s is a observer in the Game", auth.username());
+        ChessGame.TeamColor playerColor = null;
+        if (Objects.equals(auth.username(), gameData.whiteUserName())) {
+            playerColor = ChessGame.TeamColor.WHITE;
+        } else if (Objects.equals(auth.username(), gameData.blackUserName())) {
+            playerColor = ChessGame.TeamColor.BLACK;
+        } else {
+            var message = String.format("%s is an observer in the game", auth.username());
             var notification = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
             error(session, notification);
             return;
         }
+        ChessGame game = gameData.game();
         ChessMove newMove = command.getMove();
+        if (playerColor != game.getTeamTurn()) {
+            var message = String.format("It's not %s's turn.", auth.username());
+            var notification = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
+            error(session, notification);
+            return;
+        }
+        try {
+            game.makeMove(newMove);
+        } catch (InvalidMoveException e) {
+            var message = "Invalid move: " + e.getMessage();
+            var notification = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
+            error(session, notification);
+            return;
+        }
+        boolean checkmate = game.isInCheckmate(game.getTeamTurn());
+        boolean stalemate = game.isInStalemate(game.getTeamTurn());
 
+        GameData updatedGameData = new GameData(
+                gameId,
+                gameData.whiteUserName(),
+                gameData.blackUserName(),
+                gameData.gameName(),
+                game
+
+        );
+        service.updateBoard(updatedGameData);
+
+        var moveMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, auth.username() + " made a move.");
+        ConnectionHandler.broadcast(moveMessage, gameId);
+        if (checkmate) {
+            var gameOverMsg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Checkmate! " + playerColor + " wins.");
+            ConnectionHandler.broadcast(gameOverMsg, gameId);
+        } else if (stalemate) {
+            var gameOverMsg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Stalemate! The game is a draw.");
+            ConnectionHandler.broadcast(gameOverMsg, gameId);
+        }
 
     }
 
