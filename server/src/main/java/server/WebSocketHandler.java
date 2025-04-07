@@ -102,10 +102,23 @@ public class WebSocketHandler {
     }
 
 
-    private void joinObserver(Session session, JoinObserver command) {
+    private void joinObserver(Session session, JoinObserver command) throws ResponseException, IOException {
+        String authToken = command.getAuthToken();
+        AuthData auth = service.getAuthProfile(authToken);
+        int gameId = command.getGameID();
+        GameData gameData = service.getOneGame(gameId);
+        connections.add(session, gameId);
+        String serverMessage = String.format("%s has joined the game as an observer".formatted(auth.username()));
+        ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, serverMessage );
+        ConnectionHandler.broadcast(session, msg, gameId);
+        LoadGame load = new LoadGame(gameData.game());
+        ConnectionHandler.broadcast(session, load, gameId);
     }
 
+
+
     private void resign(Session session, Resign command) {
+
     }
 
     private void leaveGame(Session session, Leave command) throws ResponseException, IOException {
