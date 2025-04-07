@@ -5,12 +5,9 @@ import com.google.gson.Gson;
 import exception.ResponseException;
 import model.AuthData;
 import model.GameData;
-import org.apache.spark.scheduler.OutputCommitCoordinator;
-import org.eclipse.jetty.websocket.api.RemoteEndpoint;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import org.sparkproject.jetty.proxy.ConnectHandler;
 import service.Service;
 import websocket.commands.*;
 import websocket.messages.LoadGame;
@@ -89,9 +86,9 @@ public class WebSocketHandler {
         connections.add(session, gameId);
         String serverMessage = String.format("%s has joined the game as %s".formatted(auth.username(), Connect.getTeamColor()));
         ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, serverMessage );
-        ConnectionHandler.broadcast(session, msg, gameId);
+        ConnectionHandler.broadcast(msg, gameId);
         LoadGame load = new LoadGame(gameData.game());
-        ConnectionHandler.broadcast(session, load, gameId);
+        ConnectionHandler.broadcast(load, gameId);
     }
 
 
@@ -110,9 +107,9 @@ public class WebSocketHandler {
         connections.add(session, gameId);
         String serverMessage = String.format("%s has joined the game as an observer".formatted(auth.username()));
         ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, serverMessage );
-        ConnectionHandler.broadcast(session, msg, gameId);
+        ConnectionHandler.broadcast(msg, gameId);
         LoadGame load = new LoadGame(gameData.game());
-        ConnectionHandler.broadcast(session, load, gameId);
+        ConnectionHandler.broadcast(load, gameId);
     }
 
 
@@ -130,10 +127,13 @@ public class WebSocketHandler {
         }
         String serverMessage = String.format("%s has resigned from the Game".formatted(auth.username()));
         ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, serverMessage );
-        ConnectionHandler.broadcast(session, msg, gameId);
+        ConnectionHandler.broadcast(msg, gameId);
         LoadGame load = new LoadGame(gameData.game());
-        ConnectionHandler.broadcast(session, load, gameId);
-
+        ConnectionHandler.broadcast(load, gameId);
+        service.resetBoard(gameId);
+        GameData newGame = service.getOneGame(gameId);
+        LoadGame secondLoad = new LoadGame(newGame.game());
+        ConnectionHandler.broadcast(secondLoad, gameId);
 
     }
 
@@ -143,7 +143,7 @@ public class WebSocketHandler {
         connections.remove(session);
         String serverMessage = String.format("%s has left the game".formatted(auth.username()));
         ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, serverMessage );
-        ConnectionHandler.broadcast(session, msg, command.getGameID());
+        ConnectionHandler.broadcast(msg, command.getGameID());
     }
 
     private void makeMove(Session session, Make_Move command) {

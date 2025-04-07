@@ -1,4 +1,5 @@
 package service;
+import chess.ChessGame;
 import dataaccess.*;
 import exception.ResponseException;
 import model.AuthData;
@@ -150,8 +151,13 @@ public class Service {
     public AuthData getAuthProfile(String authToken) throws ResponseException {
         return authDAO.getAuth(authToken);
     }
-    public void resetBoard(int gameId){
-
+    public void resetBoard(int gameId) throws ResponseException {
+        GameData currentGame = gameDAO.getGame(gameId);
+        GameData newGame = new GameData(currentGame.gameId(), currentGame.whiteUserName(), currentGame.blackUserName(),currentGame.gameName(), new ChessGame());
+        gameDAO.updateGame(newGame);
+    }
+    public void updateBoard(GameData updateGame) {
+        gameDAO.updateGame(updateGame);
     }
 
 }
