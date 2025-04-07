@@ -150,5 +150,8 @@ public class Service {
     public AuthData getAuthProfile(String authToken) throws ResponseException {
         return authDAO.getAuth(authToken);
     }
+    public void resetBoard(int gameId){
+
+    }
 
 }

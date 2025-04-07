@@ -43,6 +43,21 @@ public class SQLGameDAO extends BasicDAO implements GameDAO{
     }
 
     @Override
+    public void updateGame(GameData newGameBoard) {
+        try {
+            var statement = """
+            UPDATE gameData
+            SET chessGame
+            WHERE gameId = ?
+        """;
+            executeUpdate(statement, newGameBoard.game());
+        } catch (ResponseException e) {
+            throw new RuntimeException("Error updating game information", e);
+        }
+
+    }
+
+    @Override
     public int createGame(String gameName) {
         ChessGame game = new ChessGame();
         var gameJson = new Gson().toJson(game);
