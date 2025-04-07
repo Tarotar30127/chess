@@ -87,7 +87,7 @@ public class WebSocketHandler {
             }
         }
         connections.add(session, gameId);
-        String serverMessage = String.format("%s has joined the game as %s".formatted(auth.username(), command.getTeamColor()));
+        String serverMessage = String.format("%s has joined the game as %s".formatted(auth.username(), Connect.getTeamColor()));
         ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, serverMessage );
         ConnectionHandler.broadcast(session, msg, gameId);
         LoadGame load = new LoadGame(gameData.game());
@@ -117,7 +117,23 @@ public class WebSocketHandler {
 
 
 
-    private void resign(Session session, Resign command) {
+    private void resign(Session session, Resign command) throws ResponseException, IOException {
+        String authToken = command.getAuthToken();
+        AuthData auth = service.getAuthProfile(authToken);
+        int gameId = command.getGameID();
+        GameData gameData = service.getOneGame(gameId);
+        if ((Resign.getTeamColor() != ChessGame.TeamColor.BLACK) && (Resign.getTeamColor() != ChessGame.TeamColor.WHITE)) {
+            var message = String.format("%s is not a player in the Game", auth.username());
+            var notification = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
+            error(session, notification);
+            return;
+        }
+        String serverMessage = String.format("%s has resigned from the Game".formatted(auth.username()));
+        ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, serverMessage );
+        ConnectionHandler.broadcast(session, msg, gameId);
+        LoadGame load = new LoadGame(gameData.game());
+        ConnectionHandler.broadcast(session, load, gameId);
+
 
     }
 
