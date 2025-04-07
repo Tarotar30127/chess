@@ -73,7 +73,6 @@ public class SQLGameDAO extends BasicDAO implements GameDAO{
         return result;
     }
 
-    @Override
     public GameData getGame(int gameID) {
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT gameId, whiteUserName, blackUserName, gameName, chessGame FROM gameData WHERE gameId = ?";

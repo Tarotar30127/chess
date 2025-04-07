@@ -1,7 +1,7 @@
 package client;
 
-import javax.management.Notification;
+import websocket.messages.ServerMessage;
 
 public interface ServerMessageObserver {
-    void notify(Notification notification);
+    void notify(ServerMessage notification);
 }

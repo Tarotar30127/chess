@@ -1,7 +1,6 @@
 package ui;
 
 import exception.ResponseException;
-import org.sparkproject.dmg.pmml.False;
 
 import java.util.Scanner;
 

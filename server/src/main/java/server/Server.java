@@ -11,6 +11,8 @@ public class Server {
     AuthDAO authDAO;
     GameDAO gameDAO;
 
+    private final WebSocketHandler webSocketHandler;
+
     static ServerHandler serverHandler;
 
 
@@ -20,6 +22,7 @@ public class Server {
         this.gameDAO = new SQLGameDAO();
         Service service = new Service(userDAO, authDAO, gameDAO);
         serverHandler = new ServerHandler(service);
+        webSocketHandler = new WebSocketHandler(service);
     }
 
     public int run(int desiredPort) {
@@ -28,6 +31,7 @@ public class Server {
         Spark.staticFiles.location("web");
 
         // Register your endpoints and handle exceptions here.
+        Spark.webSocket("/ws", webSocketHandler);
         // Register new user
         Spark.post("/user", serverHandler::register);
         // Login user
@@ -62,4 +66,6 @@ public class Server {
         Spark.stop();
         Spark.awaitStop();
     }
+
+
 }

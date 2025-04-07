@@ -1,8 +1,5 @@
 package service;
-import dataaccess.AuthDAO;
-import dataaccess.DataAccessException;
-import dataaccess.GameDAO;
-import dataaccess.UserDAO;
+import dataaccess.*;
 import exception.ResponseException;
 import model.AuthData;
 import model.GameData;
@@ -17,7 +14,7 @@ import java.util.UUID;
 public class Service {
     private UserDAO userDAO;
     private AuthDAO authDAO;
-    private GameDAO gameDAO;
+    private final GameDAO gameDAO;
 
     public Service(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO) {
         this.userDAO = userDAO;
@@ -146,4 +143,12 @@ public class Service {
             throw new ResponseException(500, "Error: unable to clear");
         }
     }
+
+    public GameData getOneGame(int gameId) throws ResponseException {
+        return gameDAO.getGame(gameId);
+    }
+    public AuthData getAuthProfile(String authToken) throws ResponseException {
+        return authDAO.getAuth(authToken);
+    }
+
 }
