@@ -17,10 +17,12 @@ import static ui.EscapeSequences.*;
 public class GameRepl implements ServerMessageObserver {
     private boolean active;
     private final Scanner scanner;
+    private GameClient client;
 
-    public GameRepl() {
+    public GameRepl(String serverUrl) throws ResponseException {
         this.active = true;
         this.scanner = new Scanner(System.in);
+        client = new GameClient(serverUrl, this);
     }
     public void deactivate() {
         this.active = false;

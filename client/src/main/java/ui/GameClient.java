@@ -1,6 +1,8 @@
 package ui;
 
 import client.ServerFacade;
+import client.ServerMessageObserver;
+import client.WebSocketCommunicator;
 import exception.ResponseException;
 
 import java.util.Scanner;
@@ -8,10 +10,13 @@ import java.util.Scanner;
 public class GameClient {
     private final Scanner scanner = new Scanner(System.in);
     private ServerFacade server;
+    private final ServerMessageObserver serverMessageObserver;
+    private WebSocketCommunicator ws;
 
-    public GameClient(String serverUrl) {
+    public GameClient(String serverUrl, ServerMessageObserver notify) throws ResponseException {
         this.server = new ServerFacade(serverUrl);
-
+        this.serverMessageObserver = notify;
+        ws = new WebSocketCommunicator(serverUrl, serverMessageObserver);
     }
 
     public static String eval(String in) throws ResponseException {

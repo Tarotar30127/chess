@@ -1,16 +1,11 @@
 package client;
-import com.google.gson.Gson;
 import exception.ResponseException;
 import model.AuthData;
-import model.GamesList;
 
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URI;
 import java.net.URISyntaxException;
 
-import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,6 +13,7 @@ import java.util.regex.Pattern;
 public class ServerFacade {
     private final HttpCommunicator httpCommunicator;
     private final String serverUrl;
+    WebSocketCommunicator webSocketCommunicator;
     String authToken;
 
 
@@ -26,6 +22,7 @@ public class ServerFacade {
         this.httpCommunicator = new HttpCommunicator(url);
         this.authToken = null;
         serverUrl = url;
+
     }
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
@@ -106,6 +103,11 @@ public class ServerFacade {
 
     public void clear() throws ResponseException {
         Object resp = makeRequest("DELETE", "/db", null, Object.class);
+    }
+
+
+    public void sendCommand(){
+
     }
 
 
