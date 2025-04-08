@@ -12,7 +12,6 @@ import model.GameData;
 import websocket.messages.Error;
 import websocket.messages.LoadGame;
 import websocket.messages.Notifcation;
-import websocket.messages.ServerMessage;
 
 import static ui.EscapeSequences.*;
 
@@ -22,12 +21,12 @@ public class GameRepl implements ServerMessageObserver {
     private final Scanner scanner;
     private GameClient client;
     AuthData userAuth;
-    String gameId;
+    int gameId;
     public ChessGame.TeamColor color;
     GameData game;
 
 
-    public GameRepl(String serverUrl, String gameID, AuthData userAuth, ChessGame.TeamColor color, GameData currentGame) throws ResponseException {
+    public GameRepl(String serverUrl, int gameID, AuthData userAuth, ChessGame.TeamColor color, GameData currentGame) throws ResponseException {
         this.game = currentGame;
         this.gameId = gameID;
         this.userAuth = userAuth;

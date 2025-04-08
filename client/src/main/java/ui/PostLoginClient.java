@@ -4,6 +4,10 @@ import chess.ChessGame;
 import client.ServerFacade;
 import exception.ResponseException;
 import model.AuthData;
+import model.GameData;
+import websocket.commands.Connect;
+import websocket.commands.JoinObserver;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -16,8 +20,10 @@ public class PostLoginClient {
     private final Scanner scanner = new Scanner(System.in);
     private ServerFacade server;
     AuthData userauth;
+    String serverURL;
 
     public PostLoginClient(String serverUrl) {
+        this.serverURL = serverUrl;
         this.server = new ServerFacade(serverUrl);
         this.userauth = null;
     }
@@ -44,30 +50,38 @@ public class PostLoginClient {
         if (resp.containsKey("Error")) {
             return "Game doesn't exist";
         }
-        ChessGame game = new ChessGame();
-        BoardPrintLayout.drawChessBoard(System.out, ChessGame.TeamColor.WHITE, game);
+        GameData game = server.getOneGame(gameId, userauth);
+        GameRepl gameRepl = new GameRepl(serverURL, gameId, userauth, ChessGame.TeamColor.WHITE, game);
+        server.joinObserver(new JoinObserver(userauth.authToken(), gameId));
+        gameRepl.run();
         return "success";
     }
 
     private String playGame() throws ResponseException {
-        String teamColor = null;
+        ChessGame.TeamColor teamColor = null;
+        String strTeamColor = null;
         System.out.println("Enter a Game ID>");
         int gameId = parseInt(scanner.nextLine());
         int correctGameId = gameId + 1111;
         System.out.println("Type W for white player or B for black player>");
         String playerColor = scanner.nextLine();
         if (playerColor.toLowerCase().strip().equals("w")){
-            teamColor = "WHITE";
+            teamColor = ChessGame.TeamColor.WHITE;
+            strTeamColor = "WHITE";
+
         }
         else if (playerColor.toLowerCase().strip().equals("b")){
-            teamColor = "BLACK";
+            teamColor = ChessGame.TeamColor.BLACK;
+            strTeamColor = "BLACK";
         }
         else{
             return "Not a valid color";
         }
-        Object resp = server.playGame(teamColor, correctGameId, this.userauth);
-        ChessGame game = new ChessGame();
-        BoardPrintLayout.drawChessBoard(System.out, ChessGame.TeamColor.valueOf(teamColor), game);
+        Object resp = server.playGame(strTeamColor, correctGameId, this.userauth);
+        GameData game = server.getOneGame(correctGameId, userauth);
+        GameRepl gameRepl = new GameRepl(serverURL, correctGameId, userauth, teamColor, game);
+        server.joinPlayer(new Connect(userauth.authToken(), correctGameId, teamColor));
+        gameRepl.run();
 
         return "Successfully";
     }

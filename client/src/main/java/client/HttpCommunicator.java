@@ -49,9 +49,9 @@ public class HttpCommunicator {
         int status = http.getResponseCode();
         if (!isSuccessful(status)) {
             try (InputStream respErr = http.getErrorStream()) {
-                if (respErr != null) {
-                    throw ResponseException.fromJson(respErr);
-                }
+               if (respErr != null) {
+                  throw ResponseException.fromJson(respErr);
+              }
             }
             throw new ResponseException(status, "Other failure: " + status);
         }
@@ -71,6 +71,6 @@ public class HttpCommunicator {
     }
 
     private boolean isSuccessful(int status) {
-        return status / 100 == 2;
+        return status >= 200 && status < 300;
     }
 }

@@ -1,6 +1,7 @@
 package client;
 import exception.ResponseException;
 import model.AuthData;
+import model.GameData;
 import websocket.commands.*;
 
 
@@ -101,10 +102,17 @@ public class ServerFacade {
         return games;
     }
 
+    public GameData getOneGame(int gameId, AuthData userauth) throws ResponseException {
+        this.authToken = userauth.authToken();
+        return makeRequest("GET", "/game", gameId, GameData.class);
+    }
+
+
 
     public void clear() throws ResponseException {
         Object resp = makeRequest("DELETE", "/db", null, Object.class);
     }
+
 
 
     public void joinPlayer(Connect command) throws ResponseException {

@@ -26,11 +26,11 @@ public class GameClient {
 
 
 
-    public GameClient(String serverUrl, ServerMessageObserver notify, AuthData auth, String gameID, ChessGame.TeamColor color, GameData currentGame) throws ResponseException {
+    public GameClient(String serverUrl, ServerMessageObserver notify, AuthData auth, int gameID, ChessGame.TeamColor color, GameData currentGame) throws ResponseException {
         this.userAuth = auth;
         this.game = currentGame.game();
         this.colorTeam = color;
-        this.gameId = Integer.parseInt(gameID.strip());
+        this.gameId = gameID;
         this.server = new ServerFacade(serverUrl);
         this.serverMessageObserver = notify;
         ws = new WebSocketCommunicator(serverUrl, serverMessageObserver);

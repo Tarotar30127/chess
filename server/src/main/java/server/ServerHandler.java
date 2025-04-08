@@ -113,4 +113,9 @@ public class ServerHandler {
             throw new RuntimeException(e);
         }
     }
+    public Object getOneGame(Request request, Response response) throws ResponseException {
+        int gameID = new Gson().fromJson(request.body(), int.class);
+        GameData gameData = userService.getOneGame(gameID);
+        return new Gson().toJson(gameData);
+    }
 }
