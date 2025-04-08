@@ -24,6 +24,7 @@ public class BoardPrintLayout {
             drawBlackView(out, game);
         }
         out.print(RESET_TEXT_COLOR);
+
     }
     private static void drawWhiteView(PrintStream out, ChessGame game) {
         List<String> columns = Arrays.asList(" A ", " B ", " C ", " D ", " E ", " F ", " G ", " H ");

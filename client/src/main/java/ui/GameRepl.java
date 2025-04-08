@@ -1,10 +1,20 @@
 package ui;
 
+import chess.ChessGame;
+import client.ServerMessageObserver;
+import com.google.gson.Gson;
 import exception.ResponseException;
 
 import java.util.Scanner;
+import websocket.messages.Error;
+import websocket.messages.LoadGame;
+import websocket.messages.Notifcation;
+import websocket.messages.ServerMessage;
 
-public class GameRepl {
+import static ui.EscapeSequences.*;
+
+
+public class GameRepl implements ServerMessageObserver {
     private boolean active;
     private final Scanner scanner;
 
@@ -38,6 +48,34 @@ public class GameRepl {
         System.out.println("Exiting Game...");
     }
 
+
+    @Override
+    public void notify(String notification) {
+        if (notification.contains("\"serverMessageType\":\"NOTIFICATION\"")) {
+            Notifcation notify = new Gson().fromJson(notification, Notifcation.class);
+            printNotification(notify.getMessage());
+        }
+        else if (notification.contains("\"serverMessageType\":\"ERROR\"")) {
+            Error error = new Gson().fromJson(notification, Error.class);
+            printError(error.getMessage());
+        }
+        else if (notification.contains("\"serverMessageType\":\"LOAD_GAME\"")) {
+            LoadGame loadGame = new Gson().fromJson(notification, LoadGame.class);
+            printGame(loadGame.returnGame());
+        }
+    }
+
+    private void printGame(ChessGame chessGame) {
+        BoardPrintLayout.drawChessBoard(System.out, chessGame.getTeamTurn(), chessGame);
+    }
+
+    private void printError(String message) {
+        System.out.println(SET_TEXT_COLOR_RED + "Error: " + message + RESET_TEXT_COLOR);
+    }
+
+    private void printNotification(String message) {
+        System.out.println(SET_TEXT_COLOR_BLUE + "Notification: " + message + RESET_TEXT_COLOR);
+    }
 
 
 }

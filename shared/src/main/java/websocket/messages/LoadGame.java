@@ -6,4 +6,7 @@ public class LoadGame extends ServerMessage{
         super(ServerMessageType.LOAD_GAME, game.toString());
         this.game = game;
     }
+    public ChessGame returnGame(){
+        return this.game;
+    }
 }
