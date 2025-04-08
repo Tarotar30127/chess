@@ -6,6 +6,9 @@ import com.google.gson.Gson;
 import exception.ResponseException;
 
 import java.util.Scanner;
+
+import model.AuthData;
+import model.GameData;
 import websocket.messages.Error;
 import websocket.messages.LoadGame;
 import websocket.messages.Notifcation;
@@ -18,17 +21,27 @@ public class GameRepl implements ServerMessageObserver {
     private boolean active;
     private final Scanner scanner;
     private GameClient client;
+    AuthData userAuth;
+    String gameId;
+    public ChessGame.TeamColor color;
+    GameData game;
 
-    public GameRepl(String serverUrl) throws ResponseException {
+
+    public GameRepl(String serverUrl, String gameID, AuthData userAuth, ChessGame.TeamColor color, GameData currentGame) throws ResponseException {
+        this.game = currentGame;
+        this.gameId = gameID;
+        this.userAuth = userAuth;
+        this.color = color;
         this.active = true;
         this.scanner = new Scanner(System.in);
-        client = new GameClient(serverUrl, this);
+        client = new GameClient(serverUrl, this, userAuth, gameId, color , game);
     }
     public void deactivate() {
         this.active = false;
     }
-    public void run(String gameID) throws ResponseException {
-        System.out.printf("Welcome to the Game %s!%n", gameID);
+
+    public void run() throws ResponseException {
+        System.out.printf("Welcome to the Game %s!%n", gameId);
         while (active) {
             System.out.println("""
             Commands:
@@ -41,7 +54,7 @@ public class GameRepl implements ServerMessageObserver {
             Enter the number for the command:
             """);
             String command = scanner.nextLine();
-            String com = GameClient.eval(command);
+            String com = client.eval(command);
             if (com.contains("Exiting")){
                 deactivate();
             }
