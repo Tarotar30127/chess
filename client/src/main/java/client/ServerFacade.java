@@ -1,6 +1,7 @@
 package client;
 import exception.ResponseException;
 import model.AuthData;
+import websocket.commands.*;
 
 
 import java.io.*;
@@ -106,9 +107,23 @@ public class ServerFacade {
     }
 
 
-    public void sendCommand(){
-
+    public void joinPlayer(Connect command) throws ResponseException {
+        webSocketCommunicator.send(command);
     }
 
+    public void joinObserver(JoinObserver command) throws ResponseException {
+        webSocketCommunicator.send(command);
+    }
 
+    public void leave(Leave command) throws ResponseException {
+        webSocketCommunicator.send(command);
+    }
+
+    public void resign(Resign command) throws ResponseException {
+        webSocketCommunicator.send(command);
+    }
+
+    public void makeMove(Make_Move command) throws ResponseException {
+        webSocketCommunicator.send(command);
+    }
 }

@@ -1,6 +1,8 @@
 package client;
 
+import com.google.gson.Gson;
 import exception.ResponseException;
+import websocket.commands.UserGameCommand;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -37,5 +39,14 @@ public class WebSocketCommunicator extends Endpoint {
     //Endpoint requires this method, but you don't have to do anything
     @Override
     public void onOpen(Session session, EndpointConfig endpointConfig) {
+    }
+
+    public void send(UserGameCommand command) throws ResponseException {
+        try {
+            String json = new Gson().toJson(command);
+            session.getBasicRemote().sendText(json);
+        } catch (IOException ex) {
+            throw new ResponseException(500, ex.getMessage());
+        }
     }
 }
