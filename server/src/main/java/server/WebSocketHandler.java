@@ -210,7 +210,7 @@ public class WebSocketHandler {
             return;
         }
         if (gameData.game().checkGameOver()){
-            var message = String.format("The game is already over!");
+            var message = String.format("The game is already over");
             Error notification = new Error(message);
             error(session, notification);
             return;
@@ -260,12 +260,12 @@ public class WebSocketHandler {
         var moveMessage = new Notifcation(auth.username() + " made a move.");
         ConnectionHandler.broadcast(moveMessage, gameId, session);
         if (checkmate) {
-            var gameOverMsg = new Notifcation("Checkmate! " + playerColor + " wins.");
+            var gameOverMsg = new Notifcation("Checkmate " + playerColor + " wins.");
             ConnectionHandler.broadcast(gameOverMsg, gameId, session);
             ConnectionHandler.direct(gameOverMsg, session);
 
         } else if (stalemate) {
-            var gameOverMsg = new Notifcation("Stalemate! The game is a draw.");
+            var gameOverMsg = new Notifcation("Stalemate The game is a draw.");
             ConnectionHandler.broadcast(gameOverMsg, gameId, session);
             ConnectionHandler.direct(gameOverMsg, session);
 
