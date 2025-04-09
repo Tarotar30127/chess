@@ -6,7 +6,6 @@ import client.ServerMessageObserver;
 import client.WebSocketCommunicator;
 import exception.ResponseException;
 import model.AuthData;
-import model.GameData;
 import websocket.commands.Leave;
 import websocket.commands.Make_Move;
 import websocket.commands.Resign;
@@ -14,30 +13,28 @@ import websocket.commands.Resign;
 import java.util.Map;
 import java.util.Scanner;
 
-public class GameClient {
+public class GameClient implements ServerMessageObserver{
     private static final Scanner scanner = new Scanner(System.in);
     private ServerFacade server;
-    private final ServerMessageObserver serverMessageObserver;
     private WebSocketCommunicator ws;
     private AuthData userAuth;
     private int gameId;
     private ChessGame.TeamColor colorTeam;
-    private ChessGame game;
+    private boolean obsever;
 
 
-
-    public GameClient(String serverUrl, ServerMessageObserver notify, AuthData auth, int gameID, ChessGame.TeamColor color, GameData currentGame) throws ResponseException {
+    public GameClient(String serverUrl, AuthData auth, int gameID, ChessGame.TeamColor color) throws ResponseException {
         this.userAuth = auth;
-        this.game = currentGame.game();
+        this.obsever= false;
         this.colorTeam = color;
         this.gameId = gameID;
         this.server = new ServerFacade(serverUrl);
-        this.serverMessageObserver = notify;
-        ws = new WebSocketCommunicator(serverUrl, serverMessageObserver);
-        this.userAuth = null;
+        this.server = new ServerFacade(serverUrl);
+        ws = new WebSocketCommunicator(serverUrl, this);
     }
 
-    public String eval(String in) throws ResponseException {
+    public String eval(String in, boolean observer) throws ResponseException {
+        this.obsever = observer;
         int number = Integer.parseInt(in.strip());
         return switch (number) {
             case 1 -> help();
@@ -51,10 +48,16 @@ public class GameClient {
     }
 
     private String highlight() {
+        if (obsever == true) {
+            return "You are Observing!";
+        }
         return "";
     }
 
     private String resign() throws ResponseException {
+        if (obsever == true) {
+            return "You are Observing!";
+        }
         System.out.println("Are you sure you want to resign?\n");
         System.out.println("Enter Yes or No: ");
         String answer = scanner.nextLine();
@@ -65,6 +68,9 @@ public class GameClient {
     }
 
     private String makeMove() throws ResponseException {
+        if (obsever == true) {
+            return "You are Observing!";
+        }
         Map<Character, Integer> charToNumMap = Map.of(
                 'a', 1,
                 'b', 2,
@@ -79,14 +85,12 @@ public class GameClient {
                 Enter the Chess location of the piece you want to move
                 Enter the row (1-8) of the piece you want to move:
                 Example: 1
-                Enter ->
-                """);
+                Enter ->""");
         int startRow = Integer.parseInt(scanner.nextLine().strip());
         System.out.println("""
                 Enter the column (a-h) of the piece you want to move:
                 Example: a
-                Enter ->
-                """);
+                Enter ->""");
         char startColChar = scanner.nextLine().strip().toLowerCase().charAt(0);
         if (startRow < 1 || startRow > 8 || startColChar < 'a' || startColChar > 'h') {
             return "Invalid starting position! Please enter a valid row (1-8) and column (a-h)";
@@ -98,59 +102,42 @@ public class GameClient {
                 Enter the Chess location where you want to move the piece:
                 Enter the row (1-8) of where you want to move the piece:
                 Example: 4
-                Enter ->
-                """);
+                Enter ->""");
         int endRow = Integer.parseInt(scanner.nextLine().strip());
         System.out.println("""
                 Enter the column (a-h) of where you want to move the piece:
                 Example: a
-                Enter ->
-                """);
+                Enter ->""");
         char endColChar = scanner.nextLine().strip().toLowerCase().charAt(0);
         if (endRow < 1 || endRow > 8 || endColChar < 'a' || endColChar > 'h') {
             return "Invalid ending position! Please enter a valid row (1-8) and column (a-h)";
         }
         Integer endCol = charToNumMap.get(endColChar);
         ChessPosition endPosition = new ChessPosition(endRow, endCol);
+        System.out.println("Do you want to promote a pawn? (yes/no)");
+        String response = scanner.nextLine().strip().toLowerCase();
         ChessPiece.PieceType promotion = null;
-        ChessBoard board = game.getBoard();
-        ChessPiece piece = board.getPiece(startPosition);
-        if (isPromotionMove(endPosition, piece)) {
+        if (response.equals("yes")) {
             System.out.println("""
-                    You can Promote a Pawn! 
                     What would you like to promote it to: (Queen, Rook, Bishop, Knight)
-                    Enter the piece ->
-                    """);
+                    Enter the piece ->""");
             String promotionInput = scanner.nextLine().strip().toLowerCase();
             switch (promotionInput) {
-                case "queen":
-                    promotion = ChessPiece.PieceType.QUEEN;
-                    break;
-                case "rook":
-                    promotion = ChessPiece.PieceType.ROOK;
-                    break;
-                case "bishop":
-                    promotion = ChessPiece.PieceType.BISHOP;
-                    break;
-                case "knight":
-                    promotion = ChessPiece.PieceType.KNIGHT;
-                    break;
-                default:
-                    System.out.println("Invalid promotion piece! Please enter a valid piece (Queen, Rook, Bishop, Knight).");
+                case "queen" -> promotion = ChessPiece.PieceType.QUEEN;
+                case "rook" -> promotion = ChessPiece.PieceType.ROOK;
+                case "bishop" -> promotion = ChessPiece.PieceType.BISHOP;
+                case "knight" -> promotion = ChessPiece.PieceType.KNIGHT;
+                default -> {
+                    System.out.println("Invalid promotion piece!");
                     return "Invalid promotion piece!";
+                }
             }
         }
         ChessMove move = new ChessMove(startPosition, endPosition, promotion);
         server.makeMove(new Make_Move(userAuth.authToken(), gameId, move));
         return "Successfully move";
-    }
 
-    public boolean isPromotionMove(ChessPosition toPosition, ChessPiece piece) {
-        int endRow = toPosition.getRow();
-        if (piece.getPieceType() == ChessPiece.PieceType.PAWN && (endRow == 1 || endRow == 8)) {
-            return true;
-        }
-        return false;
+
     }
 
     private String leave() throws ResponseException {
@@ -159,6 +146,7 @@ public class GameClient {
     }
 
     private String redraw() {
+        BoardPrintLayout.drawChessBoard(System.out, colorTeam, BoardPrintLayout.getCurrentGame());
         return "";
     }
 

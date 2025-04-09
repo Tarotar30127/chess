@@ -13,7 +13,7 @@ public class PreLoginClient {
     private final Scanner scanner = new Scanner(System.in);
     private ServerFacade server;
 
-    public PreLoginClient(String serverUrl) {
+    public PreLoginClient(String serverUrl) throws ResponseException {
         this.server = new ServerFacade(serverUrl);
 
     }
@@ -89,7 +89,5 @@ public class PreLoginClient {
                 - Register : <Username> <Password> <Email>
                 """;
     }
-
-
 
 }

@@ -1,6 +1,5 @@
 package server;
 
-import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessMove;
 import chess.InvalidMoveException;
@@ -13,7 +12,9 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import service.Service;
 import websocket.commands.*;
+import websocket.messages.Error;
 import websocket.messages.LoadGame;
+import websocket.messages.Notifcation;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
@@ -45,15 +46,15 @@ public class WebSocketHandler {
         Gson gson = new Gson();
 
         switch (commandType) {
-            case "JOIN_PLAYER" -> {
-                Connect command = gson.fromJson(msg, Connect.class);
-                connect(session, command);
+            case "CONNECT", "JOINPLAYER" -> {
+                JoinPlayer command = gson.fromJson(msg, JoinPlayer.class);
+                joinPlayer(session, command);
             }
-            case "JOIN_OBSERVER" -> {
+            case "JOINOBSERVER" -> {
                 JoinObserver command = gson.fromJson(msg, JoinObserver.class);
                 joinObserver(session, command);
             }
-            case "MAKE_MOVE" -> {
+            case "MAKEMOVE" -> {
                 Make_Move command = gson.fromJson(msg, Make_Move.class);
                 makeMove(session, command);
             }
@@ -69,35 +70,35 @@ public class WebSocketHandler {
         }
     }
 
-    private void connect(Session session, Connect command) throws ResponseException, IOException {
+
+    private void joinPlayer(Session session, JoinPlayer command) throws ResponseException, IOException {
         String authToken = command.getAuthToken();
         AuthData auth = service.getAuthProfile(authToken);
         int gameId = command.getGameID();
         GameData gameData = service.getOneGame(gameId);
-        if (ChessGame.TeamColor.WHITE == Connect.getTeamColor()){
-            if (gameData.whiteUserName() != auth.username()){
-                var message = String.format("%s is not a player in the Game", auth.username());
-                var notification = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
-                error(session, notification);
+        ChessGame.TeamColor teamColor = null;
+        if ((gameData.blackUserName().equals(auth.username())) || (gameData.whiteUserName().equals(auth.username()))) {
+            if (gameData.whiteUserName().equals(auth.username())) {
+                teamColor = ChessGame.TeamColor.WHITE;
             }
-        }else if (ChessGame.TeamColor.BLACK == Connect.getTeamColor()){
-            if (gameData.blackUserName() != auth.username()){
-                var message = String.format("%s is not a player in the Game", auth.username());
-                var notification = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
-                error(session, notification);
+            if (gameData.blackUserName().equals(auth.username())) {
+                teamColor = ChessGame.TeamColor.BLACK;
             }
+        } else {
+            var message = String.format("%s is not a player in the Game", auth.username());
+            websocket.messages.Error notification = new websocket.messages.Error(message);
+            error(session, notification);
+            return;
         }
-        connections.add(session, gameId);
-        String serverMessage = String.format("%s has joined the game as %s".formatted(auth.username(), Connect.getTeamColor()));
-        ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, serverMessage );
-        ConnectionHandler.broadcast(msg, gameId);
+        String serverMessage = String.format("%s has joined the game as %s".formatted(auth.username(), teamColor));
+        connections.add(session, gameId, serverMessage);
         LoadGame load = new LoadGame(gameData.game());
-        ConnectionHandler.broadcast(load, gameId);
+        ConnectionHandler.direct(load, session);
     }
 
 
 
-    private void error(Session session, ServerMessage error) throws IOException {
+    private void error(Session session, websocket.messages.Error error) throws IOException {
         System.out.printf("Error: %s%n", new Gson().toJson(error));
         session.getRemote().sendString(new Gson().toJson(error));
     }
@@ -108,12 +109,11 @@ public class WebSocketHandler {
         AuthData auth = service.getAuthProfile(authToken);
         int gameId = command.getGameID();
         GameData gameData = service.getOneGame(gameId);
-        connections.add(session, gameId);
         String serverMessage = String.format("%s has joined the game as an observer".formatted(auth.username()));
-        ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, serverMessage );
-        ConnectionHandler.broadcast(msg, gameId);
+        connections.add(session, gameId, serverMessage);
         LoadGame load = new LoadGame(gameData.game());
-        ConnectionHandler.broadcast(load, gameId);
+        session.getRemote().sendString(new Gson().toJson(load));
+
     }
 
 
@@ -125,19 +125,19 @@ public class WebSocketHandler {
         GameData gameData = service.getOneGame(gameId);
         if ((Resign.getTeamColor() != ChessGame.TeamColor.BLACK) && (Resign.getTeamColor() != ChessGame.TeamColor.WHITE)) {
             var message = String.format("%s is not a player in the Game", auth.username());
-            var notification = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
+            websocket.messages.Error notification = new websocket.messages.Error(message);
             error(session, notification);
             return;
         }
         String serverMessage = String.format("%s has resigned from the Game".formatted(auth.username()));
-        ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, serverMessage );
-        ConnectionHandler.broadcast(msg, gameId);
+        ServerMessage msg = new Notifcation(serverMessage);
+        ConnectionHandler.broadcast(msg, gameId, session);
         LoadGame load = new LoadGame(gameData.game());
-        ConnectionHandler.broadcast(load, gameId);
+        ConnectionHandler.broadcast(load, gameId, session);
         service.resetBoard(gameId);
         GameData newGame = service.getOneGame(gameId);
         LoadGame secondLoad = new LoadGame(newGame.game());
-        ConnectionHandler.broadcast(secondLoad, gameId);
+        ConnectionHandler.broadcast(secondLoad, gameId, session);
 
     }
 
@@ -146,8 +146,8 @@ public class WebSocketHandler {
         AuthData auth = service.getAuthProfile(authToken);
         connections.remove(session);
         String serverMessage = String.format("%s has left the game".formatted(auth.username()));
-        ServerMessage msg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, serverMessage );
-        ConnectionHandler.broadcast(msg, command.getGameID());
+        ServerMessage msg = new Notifcation(serverMessage);
+        ConnectionHandler.broadcast(msg, command.getGameID(), session);
     }
 
     private void makeMove(Session session, Make_Move command) throws ResponseException, IOException {
@@ -162,7 +162,7 @@ public class WebSocketHandler {
             playerColor = ChessGame.TeamColor.BLACK;
         } else {
             var message = String.format("%s is an observer in the game", auth.username());
-            var notification = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
+            Error notification = new Error(message);
             error(session, notification);
             return;
         }
@@ -170,7 +170,7 @@ public class WebSocketHandler {
         ChessMove newMove = command.getMove();
         if (playerColor != game.getTeamTurn()) {
             var message = String.format("It's not %s's turn.", auth.username());
-            var notification = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
+            Error notification = new Error(message);
             error(session, notification);
             return;
         }
@@ -178,7 +178,7 @@ public class WebSocketHandler {
             game.makeMove(newMove);
         } catch (InvalidMoveException e) {
             var message = "Invalid move: " + e.getMessage();
-            var notification = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
+            Error notification = new Error(message);
             error(session, notification);
             return;
         }
@@ -195,14 +195,14 @@ public class WebSocketHandler {
         );
         service.updateBoard(updatedGameData);
 
-        var moveMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, auth.username() + " made a move.");
-        ConnectionHandler.broadcast(moveMessage, gameId);
+        var moveMessage = new Notifcation(auth.username() + " made a move.");
+        ConnectionHandler.broadcast(moveMessage, gameId, session);
         if (checkmate) {
-            var gameOverMsg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Checkmate! " + playerColor + " wins.");
-            ConnectionHandler.broadcast(gameOverMsg, gameId);
+            var gameOverMsg = new Notifcation("Checkmate! " + playerColor + " wins.");
+            ConnectionHandler.broadcast(gameOverMsg, gameId, session);
         } else if (stalemate) {
-            var gameOverMsg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Stalemate! The game is a draw.");
-            ConnectionHandler.broadcast(gameOverMsg, gameId);
+            var gameOverMsg = new Notifcation("Stalemate! The game is a draw.");
+            ConnectionHandler.broadcast(gameOverMsg, gameId, session);
         }
 
     }

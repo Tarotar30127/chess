@@ -12,7 +12,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ServerFacade {
+public class ServerFacade implements ServerMessageObserver {
     private final HttpCommunicator httpCommunicator;
     private final String serverUrl;
     WebSocketCommunicator webSocketCommunicator;
@@ -20,10 +20,12 @@ public class ServerFacade {
 
 
 
-    public ServerFacade(String url) {
+    public ServerFacade(String url){
+        serverUrl = url;
+        this.webSocketCommunicator = new WebSocketCommunicator(serverUrl, this);
         this.httpCommunicator = new HttpCommunicator(url);
         this.authToken = null;
-        serverUrl = url;
+
 
     }
 
@@ -102,11 +104,6 @@ public class ServerFacade {
         return games;
     }
 
-    public GameData getOneGame(int gameId, AuthData userauth) throws ResponseException {
-        this.authToken = userauth.authToken();
-        return makeRequest("GET", "/game", gameId, GameData.class);
-    }
-
 
 
     public void clear() throws ResponseException {
@@ -115,7 +112,7 @@ public class ServerFacade {
 
 
 
-    public void joinPlayer(Connect command) throws ResponseException {
+    public void joinPlayer(JoinPlayer command) throws ResponseException {
         webSocketCommunicator.send(command);
     }
 

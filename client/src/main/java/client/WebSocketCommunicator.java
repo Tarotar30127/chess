@@ -15,7 +15,7 @@ public class WebSocketCommunicator extends Endpoint {
     ServerMessageObserver notificationHandler;
 
 
-    public WebSocketCommunicator(String url, ServerMessageObserver notificationHandler) throws ResponseException {
+    public WebSocketCommunicator(String url, ServerMessageObserver notificationHandler) {
         try {
             url = url.replace("http", "ws");
             URI socketURI = new URI(url + "/ws");
@@ -32,7 +32,11 @@ public class WebSocketCommunicator extends Endpoint {
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
-            throw new ResponseException(500, ex.getMessage());
+            try {
+                throw new ResponseException(500, ex.getMessage());
+            } catch (ResponseException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

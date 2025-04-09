@@ -4,9 +4,6 @@ import chess.ChessGame;
 import client.ServerFacade;
 import exception.ResponseException;
 import model.AuthData;
-import model.GameData;
-import websocket.commands.Connect;
-import websocket.commands.JoinObserver;
 
 import java.util.List;
 import java.util.Map;
@@ -50,9 +47,7 @@ public class PostLoginClient {
         if (resp.containsKey("Error")) {
             return "Game doesn't exist";
         }
-        GameData game = server.getOneGame(gameId, userauth);
-        GameRepl gameRepl = new GameRepl(serverURL, gameId, userauth, ChessGame.TeamColor.WHITE, game);
-        server.joinObserver(new JoinObserver(userauth.authToken(), gameId));
+        GameRepl gameRepl = new GameRepl(serverURL, gameId, userauth, ChessGame.TeamColor.WHITE, true);
         gameRepl.run();
         return "success";
     }
@@ -78,9 +73,7 @@ public class PostLoginClient {
             return "Not a valid color";
         }
         Object resp = server.playGame(strTeamColor, correctGameId, this.userauth);
-        GameData game = server.getOneGame(correctGameId, userauth);
-        GameRepl gameRepl = new GameRepl(serverURL, correctGameId, userauth, teamColor, game);
-        server.joinPlayer(new Connect(userauth.authToken(), correctGameId, teamColor));
+        GameRepl gameRepl = new GameRepl(serverURL, gameId, userauth, teamColor, false);
         gameRepl.run();
 
         return "Successfully";
@@ -89,32 +82,17 @@ public class PostLoginClient {
     private String listGame() throws ResponseException {
         Map resp = server.listGame(this.userauth);
         List<Map<String, Object>> games = (List<Map<String, Object>>) resp.get("games");
-        StringBuilder out = new StringBuilder();
         System.out.printf("  Game ID  |  Game Name  |  White User  |  Black User %n");
-        Pattern gamePattern = Pattern.compile("gameID=(\\d+).*?gameName=(\\w+)", Pattern.DOTALL);
-        Pattern whitePlayerPattern = Pattern.compile("whiteUserName=(\\w*)");
-        Pattern blackPlayerPattern = Pattern.compile("blackUserName=(\\w*)");
         for (Map<String, Object> gameData : games) {
-            String gameDataStr = gameData.toString();
-            Matcher gameMatcher = gamePattern.matcher(gameDataStr);
-            if (gameMatcher.find()) {
-                String gameIDStr = gameMatcher.group(1);
-                int gameID = Integer.parseInt(gameIDStr) - 1111;
-                String gameName = gameMatcher.group(2);
-                Matcher whiteMatcher = whitePlayerPattern.matcher(gameDataStr);
-                String whiteUsername = "no user found";
-                if (whiteMatcher.find()) {
-                    whiteUsername = whiteMatcher.group(1);
-                }
-                Matcher blackMatcher = blackPlayerPattern.matcher(gameDataStr);
-                String blackUsername = "no user found";
-                if (blackMatcher.find()) {
-                    blackUsername = blackMatcher.group(1);
-                }
-                System.out.printf("  Game ID: %d | Game Name: %s  |  White User: %s  |  Black User: %s %n",
-                        gameID, gameName, whiteUsername, blackUsername);
-            }
+            int gameID = ((Number) gameData.get("gameID")).intValue() - 1111;
+            String gameName = (String) gameData.get("gameName");
+            String whiteUsername = (String) gameData.getOrDefault("whiteUsername", "no user found");
+            String blackUserName = (String) gameData.getOrDefault("blackUsername", "no user found");
+
+            System.out.printf("  Game ID: %d | Game Name: %s  |  White User: %s  |  Black User: %s %n",
+                    gameID, gameName, whiteUsername, blackUserName);
         }
+
         return "Successful printing list";
     }
 
@@ -160,5 +138,7 @@ public class PostLoginClient {
                 - observe : <ID>
                """;
     }
+
+
 }
 

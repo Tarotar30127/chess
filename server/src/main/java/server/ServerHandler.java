@@ -10,6 +10,7 @@ import service.Service;
 import spark.Request;
 import spark.Response;
 
+import java.io.PrintStream;
 import java.util.*;
 
 public class ServerHandler {
@@ -114,8 +115,15 @@ public class ServerHandler {
         }
     }
     public Object getOneGame(Request request, Response response) throws ResponseException {
-        int gameID = new Gson().fromJson(request.body(), int.class);
+        int gameID = Integer.parseInt(request.params(":gameId"));
+        System.out.println("Requesting game with ID: " + gameID);
         GameData gameData = userService.getOneGame(gameID);
+        if (gameData == null) {
+            throw new ResponseException(404, "Game not found");
+        }
+
+        System.out.println("Game Data Found: " + gameData);
+        response.status(200);
         return new Gson().toJson(gameData);
     }
 }

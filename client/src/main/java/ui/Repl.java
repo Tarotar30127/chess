@@ -1,5 +1,6 @@
 package ui;
 
+import exception.ResponseException;
 import model.AuthData;
 
 import java.util.Scanner;
@@ -24,7 +25,7 @@ public class Repl {
 
 
 
-    public Repl(String serverUrl) {
+    public Repl(String serverUrl) throws ResponseException {
         preClient = new PreLoginClient(serverUrl);
         postClient = new PostLoginClient(serverUrl);
         this.userAuth = null;
