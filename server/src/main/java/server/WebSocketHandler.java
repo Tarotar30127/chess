@@ -27,6 +27,7 @@ public class WebSocketHandler {
     private final ConnectionHandler connections = new ConnectionHandler();
     private static final Pattern COMMAND_TYPE_PATTERN = Pattern.compile("\"commandType\"\\s*:\\s*\"(\\w+)\"");
     private final Service service;
+    private boolean resign = false;
 
     public WebSocketHandler(Service service) {
         this.service = service;
@@ -118,7 +119,7 @@ public class WebSocketHandler {
         AuthData auth = service.getAuthProfile(authToken);
         int gameId = command.getGameID();
         GameData gameData = service.getOneGame(gameId);
-        if ((Resign.getTeamColor() != ChessGame.TeamColor.BLACK) && (Resign.getTeamColor() != ChessGame.TeamColor.WHITE)) {
+        if (!(auth.username().equals(gameData.whiteUserName()) || auth.username().equals(gameData.blackUserName()))) {
             var message = String.format("%s is not a player in the Game", auth.username());
             websocket.messages.Error notification = new websocket.messages.Error(message);
             error(session, notification);
@@ -127,12 +128,14 @@ public class WebSocketHandler {
         String serverMessage = String.format("%s has resigned from the Game".formatted(auth.username()));
         ServerMessage msg = new Notifcation(serverMessage);
         ConnectionHandler.broadcast(msg, gameId, session);
-        LoadGame load = new LoadGame(gameData.game());
-        ConnectionHandler.broadcast(load, gameId, session);
-        service.resetBoard(gameId);
-        GameData newGame = service.getOneGame(gameId);
-        LoadGame secondLoad = new LoadGame(newGame.game());
-        ConnectionHandler.broadcast(secondLoad, gameId, session);
+        ConnectionHandler.direct(msg, session);
+        resign = true;
+//        LoadGame load = new LoadGame(gameData.game());
+//        ConnectionHandler.broadcast(load, gameId, session);
+//        service.resetBoard(gameId);
+//        GameData newGame = service.getOneGame(gameId);
+//        LoadGame secondLoad = new LoadGame(newGame.game());
+//        ConnectionHandler.broadcast(secondLoad, gameId, session);
 
     }
 
@@ -148,6 +151,13 @@ public class WebSocketHandler {
     private void makeMove(Session session, Make_Move command) throws ResponseException, IOException {
         String authToken = command.getAuthToken();
         AuthData auth = service.getAuthProfile(authToken);
+        if (resign == true){
+            var message = String.format("%s has resigned from the game", auth.username());
+            Error notification = new Error(message);
+            error(session, notification);
+            return;
+        }
+
         if (auth == null) {
             Error unauthorized = new Error("Invalid authToken.");
             ConnectionHandler.direct(unauthorized, session);
