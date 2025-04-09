@@ -20,13 +20,12 @@ public class ServerFacade {
 
     public void passinNotify(ServerMessageObserver notification){
         notify = notification;
+        this.webSocketCommunicator = new WebSocketCommunicator(serverUrl, notify);
     }
     public ServerFacade(String url){
         serverUrl = url;
         this.httpCommunicator = new HttpCommunicator(url);
         this.authToken = null;
-
-
     }
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {

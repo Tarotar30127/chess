@@ -4,12 +4,12 @@ import chess.*;
 import client.ServerFacade;
 import client.ServerMessageObserver;
 import client.WebSocketCommunicator;
+import com.google.gson.Gson;
 import exception.ResponseException;
 import model.AuthData;
-import websocket.commands.Leave;
-import websocket.commands.Make_Move;
-import websocket.commands.Redraw;
-import websocket.commands.Resign;
+import websocket.commands.*;
+import websocket.messages.LoadGame;
+import websocket.messages.Notifcation;
 
 import java.util.Collection;
 import java.util.Map;
@@ -23,6 +23,7 @@ public class GameClient implements ServerMessageObserver{
     private int gameId;
     private ChessGame.TeamColor colorTeam;
     private boolean obsever;
+    private BoardPrintLayout localChess;
 
 
     public GameClient(String serverUrl, AuthData auth, int gameID, ChessGame.TeamColor color)  {
@@ -33,6 +34,22 @@ public class GameClient implements ServerMessageObserver{
         this.server = new ServerFacade(serverUrl);
         server.passinNotify(this);
         ws = new WebSocketCommunicator(serverUrl, this);
+    }
+
+    public void joinGame(int gameId, String authToken, ChessGame.TeamColor color, boolean isObserver) throws ResponseException {
+        if (!isObserver) {
+            try {
+                server.joinPlayer(new Connect(authToken, gameId, color), this);
+            } catch (ResponseException e) {
+                throw new ResponseException(500, "unable to join as player");
+            }
+        } else {
+            try {
+                server.joinObserver(new Connect(authToken, gameId, null), this);
+            } catch (ResponseException e) {
+                throw new ResponseException(500, "unable to join as observer");
+            }
+        }
     }
 
     public String eval(String in, boolean observer) throws ResponseException {
@@ -51,12 +68,16 @@ public class GameClient implements ServerMessageObserver{
     }
 
     private String resetBoard() throws ResponseException {
-        server.redraw(new Redraw(userAuth.authToken(), gameId));
+        try {
+            server.redraw(new Redraw(userAuth.authToken(), gameId));
+        } catch (ResponseException e) {
+            throw new ResponseException(403, "unable to draw");
+        }
         return "";
     }
 
     private String highlight() {
-        ChessGame chessGame = new ChessGame();
+        ChessGame chessGame = localChess.getCurrentGame();
         System.out.println("Enter the Chess location of the piece you want to highlight legal moves for:");
         System.out.println("Enter the row (1-8) of the piece:");
         int startRow = Integer.parseInt(scanner.nextLine().strip());
@@ -167,11 +188,16 @@ public class GameClient implements ServerMessageObserver{
     }
 
     private String leave() throws ResponseException {
-        server.leave(new Leave(userAuth.authToken(), gameId));
+        try {
+            server.leave(new Leave(userAuth.authToken(), gameId));
+        } catch (ResponseException e) {
+            throw new ResponseException(500, "unable to leave");
+        }
         return "Exiting Game";
     }
 
     private String redraw() {
+        localChess.printCurrentGame(colorTeam);
         return"";
     }
 
@@ -187,4 +213,35 @@ public class GameClient implements ServerMessageObserver{
             """;
     }
 
+    @Override
+    public void notify (String notification) {
+        try {
+            if (notification.contains("\"serverMessageType\":\"NOTIFICATION\"")) {
+                Notifcation notify = new Gson().fromJson(notification, Notifcation.class);
+                printNotification(notify.getMessage());
+            } else if (notification.contains("\"serverMessageType\":\"ERROR\"")) {
+                Error error = new Gson().fromJson(notification, Error.class);
+                printError(error.getMessage());
+            } else if (notification.contains("\"serverMessageType\":\"LOAD_GAME\"")) {
+                LoadGame loadGame = new Gson().fromJson(notification, LoadGame.class);
+                printGame(loadGame.returnGame());
+            }
+        } catch (Exception e) {
+            System.out.println("Error processing the WebSocket message: " + e.getMessage());
+        }
+    }
+    private void printGame(ChessGame chessGame) {
+        BoardPrintLayout layout = new BoardPrintLayout(chessGame);
+        localChess = layout;
+        BoardPrintLayout.drawChessBoard(System.out, colorTeam, chessGame);
+    }
+
+    private void printError(String message) {
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "Error: " + message + EscapeSequences.RESET_TEXT_COLOR);
+    }
+
+    private void printNotification(String message) {
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_BLUE + "Notification: " + message + EscapeSequences.RESET_TEXT_COLOR);
+    }
 }
+

@@ -11,18 +11,21 @@ import java.util.*;
 import static ui.EscapeSequences.*;
 
 public class BoardPrintLayout {
-    static ChessGame currentGame;
+    private final ChessGame currentGame;
 
     public BoardPrintLayout(ChessGame currentGame){
         this.currentGame = currentGame;
     }
 
-    public static ChessGame getCurrentGame() {
+    public ChessGame getCurrentGame() {
         return currentGame;
     }
 
+    public void printCurrentGame(ChessGame.TeamColor color) {
+        drawChessBoard(System.out, color, currentGame);
+    }
+
     public static void drawChessBoard(PrintStream out, ChessGame.TeamColor teamColor, ChessGame game) {
-        currentGame = game;
         if (teamColor == ChessGame.TeamColor.WHITE) {
             drawWhiteView(out, game);
         } else {

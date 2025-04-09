@@ -2,12 +2,9 @@ package ui;
 
 import chess.ChessGame;
 import client.ServerFacade;
-import client.ServerMessageObserver;
-import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import exception.ResponseException;
 import model.AuthData;
-import websocket.messages.LoadGame;
-import websocket.messages.Notifcation;
 
 import java.util.List;
 import java.util.Map;
@@ -77,10 +74,14 @@ public class PostLoginClient {
             return "Not a valid color";
         }
         Object resp = server.playGame(strTeamColor, correctGameId, this.userauth);
-        GameRepl gameRepl = new GameRepl(serverURL, gameId, userauth, teamColor, false);
-        gameRepl.run();
+        if (resp.toString().contains("Error")) {
+            return "Unsuccessfully";
+        } else {
+            GameRepl gameRepl = new GameRepl(serverURL, correctGameId, userauth, teamColor, false);
+            gameRepl.run();
 
-        return "Successfully";
+            return "Successfully";
+        }
     }
 
     private String listGame() throws ResponseException {

@@ -1,27 +1,21 @@
 package ui;
 
 import chess.ChessGame;
-import client.ServerFacade;
-import client.ServerMessageObserver;
 import exception.ResponseException;
 
 import java.util.Scanner;
 
 import model.AuthData;
-import websocket.commands.Connect;
 
 
-
-public class GameRepl implements ServerMessageObserver {
+public class GameRepl {
     private boolean active;
     private final Scanner scanner;
     private GameClient client;
     private boolean observer = false;
     AuthData userAuth;
     int gameId;
-    private ServerFacade server;
     public ChessGame.TeamColor color;
-
 
 
     public GameRepl(String serverUrl, int gameID, AuthData userAuth, ChessGame.TeamColor color, boolean observe) throws ResponseException {
@@ -32,17 +26,13 @@ public class GameRepl implements ServerMessageObserver {
         this.observer = observe;
         this.scanner = new Scanner(System.in);
         client = new GameClient(serverUrl, userAuth, this.gameId, color);
+        client.joinGame(gameId,userAuth.authToken(), color, observer);
     }
     public void deactivate() {
         this.active = false;
     }
 
     public void run() throws ResponseException {
-        if (observer == false){
-            server.joinPlayer(new Connect(userAuth.authToken(), gameId, color), this);
-        }else {
-            server.joinObserver(new Connect(userAuth.authToken(), gameId, null), this);
-        }
         System.out.printf("Welcome to the Game %s!%n", this.gameId);
         while (active) {
             System.out.println("""
@@ -65,5 +55,6 @@ public class GameRepl implements ServerMessageObserver {
         }
         System.out.println("Exiting Game...");
     }
+
 
 }
