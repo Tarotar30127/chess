@@ -199,17 +199,20 @@ public class WebSocketHandler {
 
         );
         service.updateBoard(updatedGameData);
-
-        var moveMessage = new Notifcation(auth.username() + " made a move.");
-        ConnectionHandler.broadcast(moveMessage, gameId, session);
+        LoadGame load = new LoadGame(updatedGameData.game());
+        ConnectionHandler.broadcast(load, gameId, session);
+        ConnectionHandler.direct(load, session);
         if (checkmate) {
             var gameOverMsg = new Notifcation("Checkmate! " + playerColor + " wins.");
             ConnectionHandler.broadcast(gameOverMsg, gameId, session);
         } else if (stalemate) {
             var gameOverMsg = new Notifcation("Stalemate! The game is a draw.");
             ConnectionHandler.broadcast(gameOverMsg, gameId, session);
-        }
+        }else{
+            var moveMessage = new Notifcation(auth.username() + " made a move.");
+            ConnectionHandler.broadcast(moveMessage, gameId, session);
 
+        }
     }
 
 
