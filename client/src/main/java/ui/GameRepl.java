@@ -2,15 +2,12 @@ package ui;
 
 import chess.ChessGame;
 import client.ServerFacade;
-import client.ServerMessageObserver;
-import client.WebSocketCommunicator;
 import exception.ResponseException;
 
 import java.util.Scanner;
 
 import model.AuthData;
-import websocket.commands.JoinObserver;
-import websocket.commands.JoinPlayer;
+import websocket.commands.Connect;
 
 
 public class GameRepl {
@@ -41,9 +38,9 @@ public class GameRepl {
 
     public void run() throws ResponseException {
         if (observer == false){
-            server.joinPlayer(new JoinPlayer(userAuth.authToken(), gameId, color));
+            server.joinPlayer(new Connect(userAuth.authToken(), gameId, color));
         }else {
-            server.joinObserver(new JoinObserver(userAuth.authToken(), gameId));
+            server.joinObserver(new Connect(userAuth.authToken(), gameId, null));
         }
         System.out.printf("Welcome to the Game %s!%n", this.gameId);
         while (active) {

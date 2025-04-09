@@ -112,11 +112,11 @@ public class ServerFacade implements ServerMessageObserver {
 
 
 
-    public void joinPlayer(JoinPlayer command) throws ResponseException {
+    public void joinPlayer(Connect command) throws ResponseException {
         webSocketCommunicator.send(command);
     }
 
-    public void joinObserver(JoinObserver command) throws ResponseException {
+    public void joinObserver(Connect command) throws ResponseException {
         webSocketCommunicator.send(command);
     }
 
