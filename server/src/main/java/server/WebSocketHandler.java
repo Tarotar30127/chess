@@ -46,15 +46,11 @@ public class WebSocketHandler {
         Gson gson = new Gson();
 
         switch (commandType) {
-            case "CONNECT", "JOINPLAYER" -> {
-                JoinPlayer command = gson.fromJson(msg, JoinPlayer.class);
-                joinPlayer(session, command);
+            case "CONNECT" -> {
+                Connect command = gson.fromJson(msg, Connect.class);
+                connect(session, command);
             }
-            case "JOINOBSERVER" -> {
-                JoinObserver command = gson.fromJson(msg, JoinObserver.class);
-                joinObserver(session, command);
-            }
-            case "MAKEMOVE" -> {
+            case "MAKE_MOVE" -> {
                 Make_Move command = gson.fromJson(msg, Make_Move.class);
                 makeMove(session, command);
             }
@@ -71,26 +67,37 @@ public class WebSocketHandler {
     }
 
 
-    private void joinPlayer(Session session, JoinPlayer command) throws ResponseException, IOException {
+    private void connect(Session session, Connect command) throws ResponseException, IOException {
         String authToken = command.getAuthToken();
         AuthData auth = service.getAuthProfile(authToken);
+        if (auth == null) {
+            Error unauthorized = new Error("Invalid authToken.");
+            ConnectionHandler.direct(unauthorized, session);
+            session.close();
+            return;
+        }
         int gameId = command.getGameID();
         GameData gameData = service.getOneGame(gameId);
+        if (gameData == null) {
+            Error gameNotFound = new Error("Game with ID " + gameId + " not found.");
+            ConnectionHandler.direct(gameNotFound, session);
+            session.close();
+            return;
+        }
         ChessGame.TeamColor teamColor = null;
+        String serverMessage = null;
         if ((gameData.blackUserName().equals(auth.username())) || (gameData.whiteUserName().equals(auth.username()))) {
             if (gameData.whiteUserName().equals(auth.username())) {
                 teamColor = ChessGame.TeamColor.WHITE;
+                serverMessage = String.format("%s has joined the game as %s".formatted(auth.username(), teamColor));
             }
             if (gameData.blackUserName().equals(auth.username())) {
                 teamColor = ChessGame.TeamColor.BLACK;
+                serverMessage = String.format("%s has joined the game as %s".formatted(auth.username(), teamColor));
             }
         } else {
-            var message = String.format("%s is not a player in the Game", auth.username());
-            websocket.messages.Error notification = new websocket.messages.Error(message);
-            error(session, notification);
-            return;
+            serverMessage = String.format("%s has joined the game as an observer".formatted(auth.username()));
         }
-        String serverMessage = String.format("%s has joined the game as %s".formatted(auth.username(), teamColor));
         connections.add(session, gameId, serverMessage);
         LoadGame load = new LoadGame(gameData.game());
         ConnectionHandler.direct(load, session);
@@ -103,18 +110,6 @@ public class WebSocketHandler {
         session.getRemote().sendString(new Gson().toJson(error));
     }
 
-
-    private void joinObserver(Session session, JoinObserver command) throws ResponseException, IOException {
-        String authToken = command.getAuthToken();
-        AuthData auth = service.getAuthProfile(authToken);
-        int gameId = command.getGameID();
-        GameData gameData = service.getOneGame(gameId);
-        String serverMessage = String.format("%s has joined the game as an observer".formatted(auth.username()));
-        connections.add(session, gameId, serverMessage);
-        LoadGame load = new LoadGame(gameData.game());
-        session.getRemote().sendString(new Gson().toJson(load));
-
-    }
 
 
 
@@ -153,8 +148,18 @@ public class WebSocketHandler {
     private void makeMove(Session session, Make_Move command) throws ResponseException, IOException {
         String authToken = command.getAuthToken();
         AuthData auth = service.getAuthProfile(authToken);
+        if (auth == null) {
+            Error unauthorized = new Error("Invalid authToken.");
+            ConnectionHandler.direct(unauthorized, session);
+            return;
+        }
         int gameId = command.getGameID();
         GameData gameData = service.getOneGame(gameId);
+        if (gameData == null) {
+            Error gameNotFound = new Error("Game with ID " + gameId + " not found.");
+            ConnectionHandler.direct(gameNotFound, session);
+            return;
+        }
         ChessGame.TeamColor playerColor = null;
         if (Objects.equals(auth.username(), gameData.whiteUserName())) {
             playerColor = ChessGame.TeamColor.WHITE;
