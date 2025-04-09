@@ -125,11 +125,26 @@ public class WebSocketHandler {
             error(session, notification);
             return;
         }
+        if (gameData.game().checkGameOver()) {
+            String message = "The game is already over!";
+            Notifcation notif = new Notifcation(message);
+            ConnectionHandler.broadcast(notif, gameId, session);
+            websocket.messages.Error errorMsg = new websocket.messages.Error(message);
+            ConnectionHandler.direct(errorMsg, session);
+            return;
+        }else if(resign){
+            String message = "You can't resign twice";
+            websocket.messages.Error errorMsg = new websocket.messages.Error(message);
+            ConnectionHandler.direct(errorMsg, session);
+            return;
+        }
         String serverMessage = String.format("%s has resigned from the Game".formatted(auth.username()));
         ServerMessage msg = new Notifcation(serverMessage);
         ConnectionHandler.broadcast(msg, gameId, session);
         ConnectionHandler.direct(msg, session);
+        gameData.game().setGameOver();
         resign = true;
+
 //        LoadGame load = new LoadGame(gameData.game());
 //        ConnectionHandler.broadcast(load, gameId, session);
 //        service.resetBoard(gameId);
@@ -142,22 +157,33 @@ public class WebSocketHandler {
     private void leaveGame(Session session, Leave command) throws ResponseException, IOException {
         String authToken = command.getAuthToken();
         AuthData auth = service.getAuthProfile(authToken);
-        connections.remove(session);
-        String serverMessage = String.format("%s has left the game".formatted(auth.username()));
+        GameData gameData = service.getOneGame(command.getGameID());
+        String whiteName = gameData.whiteUserName();
+        String blackName = gameData.blackUserName();
+        if (Objects.equals(gameData.whiteUserName(), auth.username())) {
+            whiteName = null;
+        }
+        if (Objects.equals(gameData.blackUserName(), auth.username())) {
+            blackName = null;
+        }
+        GameData updatedGameData = new GameData(
+                gameData.gameId(),
+                whiteName,
+                blackName,
+                gameData.gameName(),
+                gameData.game()
+        );
+        service.updatePlayer(updatedGameData);
+        String serverMessage = String.format("%s has left the game", auth.username());
         ServerMessage msg = new Notifcation(serverMessage);
         ConnectionHandler.broadcast(msg, command.getGameID(), session);
+        connections.remove(session);
+        session.close();
     }
 
     private void makeMove(Session session, Make_Move command) throws ResponseException, IOException {
         String authToken = command.getAuthToken();
         AuthData auth = service.getAuthProfile(authToken);
-        if (resign == true){
-            var message = String.format("%s has resigned from the game", auth.username());
-            Error notification = new Error(message);
-            error(session, notification);
-            return;
-        }
-
         if (auth == null) {
             Error unauthorized = new Error("Invalid authToken.");
             ConnectionHandler.direct(unauthorized, session);
@@ -168,6 +194,21 @@ public class WebSocketHandler {
         if (gameData == null) {
             Error gameNotFound = new Error("Game with ID " + gameId + " not found.");
             ConnectionHandler.direct(gameNotFound, session);
+            return;
+        }
+        if (gameData.game().checkGameOver()){
+            var message = String.format("The game is already over!");
+            Error notification = new Error(message);
+            error(session, notification);
+
+            LoadGame load = new LoadGame(gameData.game());
+            ConnectionHandler.broadcast(load, gameId, session);
+            ConnectionHandler.direct(load, session);
+            return;
+        } else if (resign){
+            var message = String.format("The game is already over!");
+            Error notification = new Error(message);
+            error(session, notification);
             return;
         }
         ChessGame.TeamColor playerColor = null;

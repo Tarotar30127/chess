@@ -156,6 +156,9 @@ public class Service {
         GameData newGame = new GameData(currentGame.gameId(), currentGame.whiteUserName(), currentGame.blackUserName(),currentGame.gameName(), new ChessGame());
         gameDAO.updateGame(newGame);
     }
+    public void updatePlayer(GameData updatedGame){
+        gameDAO.updatePlayers(updatedGame);
+    }
     public void updateBoard(GameData updateGame) {
         gameDAO.updateGame(updateGame);
     }
