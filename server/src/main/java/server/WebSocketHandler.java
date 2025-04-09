@@ -63,8 +63,25 @@ public class WebSocketHandler {
                 Resign command = gson.fromJson(msg, Resign.class);
                 resign(session, command);
             }
+            case "REDRAW" -> {
+                Redraw command = gson.fromJson(msg, Redraw.class);
+                redraw(session, command);
+            }
             default -> System.out.println("Unknown command received: " + commandType);
         }
+    }
+
+    private void redraw(Session session, Redraw command) throws ResponseException, IOException {
+        String authToken = command.getAuthToken();
+        AuthData auth = service.getAuthProfile(authToken);
+        if (auth == null) {
+            Error unauthorized = new Error("Invalid authToken.");
+            ConnectionHandler.direct(unauthorized, session);
+        }
+        int gameId = command.getGameID();
+        GameData gameData = service.getOneGame(gameId);
+        LoadGame load = new LoadGame(gameData.game());
+        ConnectionHandler.direct(load, session);
     }
 
 

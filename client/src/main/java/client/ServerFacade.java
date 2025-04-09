@@ -131,4 +131,7 @@ public class ServerFacade implements ServerMessageObserver {
     public void makeMove(Make_Move command) throws ResponseException {
         webSocketCommunicator.send(command);
     }
+    public void redraw(Redraw command) throws ResponseException {
+        webSocketCommunicator.send(command);
+    }
 }

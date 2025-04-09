@@ -8,6 +8,7 @@ import exception.ResponseException;
 import model.AuthData;
 import websocket.commands.Leave;
 import websocket.commands.Make_Move;
+import websocket.commands.Redraw;
 import websocket.commands.Resign;
 
 import java.util.Map;
@@ -145,8 +146,8 @@ public class GameClient implements ServerMessageObserver{
         return "Exiting Game";
     }
 
-    private String redraw() {
-        BoardPrintLayout.drawChessBoard(System.out, colorTeam, BoardPrintLayout.getCurrentGame());
+    private String redraw() throws ResponseException {
+        server.redraw(new Redraw(userAuth.authToken(), gameId));
         return "";
     }
 
