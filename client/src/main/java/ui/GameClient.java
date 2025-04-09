@@ -7,6 +7,7 @@ import client.WebSocketCommunicator;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.AuthData;
+import org.jetbrains.annotations.Nullable;
 import websocket.commands.*;
 import websocket.messages.LoadGame;
 import websocket.messages.Notifcation;
@@ -138,12 +139,10 @@ public class GameClient implements ServerMessageObserver{
                 Enter the row (1-8) of the piece you want to move:
                 Example: 1
                 Enter ->""");
-        int startRow = Integer.parseInt(scanner.nextLine().strip());
-        if (startRow < 1 || startRow > 8 || startColChar < 'a' || startColChar > 'h') {
-            return "Invalid starting position! Please enter a valid row (1-8) and column (a-h)";
+        ChessPosition startPosition = getChessPosition(charToNumMap, startColChar);
+        if (startPosition == null) {
+            return "invalid input";
         }
-        Integer startCol = charToNumMap.get(startColChar);
-        ChessPosition startPosition = new ChessPosition(startRow, startCol);
         System.out.println("""
                 Enter the Chess location where you want to move the piece:
                 Enter the column (a-h) of where you want to move the piece:
@@ -155,11 +154,11 @@ public class GameClient implements ServerMessageObserver{
                 Example: 4
                 Enter ->""");
         int endRow = Integer.parseInt(scanner.nextLine().strip());
-        if (endRow < 1 || endRow > 8 || endColChar < 'a' || endColChar > 'h') {
-            return "Invalid ending position! Please enter a valid row (1-8) and column (a-h)";
-        }
-        Integer endCol = charToNumMap.get(endColChar);
+        int endCol = charToNumMap.get(endColChar);
         ChessPosition endPosition = new ChessPosition(endRow, endCol);
+        if((endCol < 0)||(endCol>9)||(endRow < 0)||(endRow>9)){
+            return "invalid input";
+        }
         System.out.println("Do you want to promote a pawn? (yes/no)");
         String response = scanner.nextLine().strip().toLowerCase();
         ChessPiece.PieceType promotion = null;
@@ -184,6 +183,16 @@ public class GameClient implements ServerMessageObserver{
         return "Successfully submitted move";
 
 
+    }
+
+    private static @Nullable ChessPosition getChessPosition (Map<Character, Integer> charToNumMap, char startColChar) {
+        int startRow = Integer.parseInt(scanner.nextLine().strip());
+        int startCol = charToNumMap.get(startColChar);
+        ChessPosition startPosition = new ChessPosition(startRow, startCol);
+        if((startCol < 0)||(startCol>9)||(startRow < 0)||(startRow>9)){
+            return null;
+        }
+        return startPosition;
     }
 
     private String leave() throws ResponseException {

@@ -48,7 +48,7 @@ public class PostLoginClient {
         if (resp.containsKey("Error")) {
             return "Game doesn't exist";
         }
-        GameRepl gameRepl = new GameRepl(serverURL, gameId, userauth, ChessGame.TeamColor.WHITE, true);
+        GameRepl gameRepl = new GameRepl(serverURL, gameId+1111, userauth, ChessGame.TeamColor.WHITE, true);
         gameRepl.run();
         return "success";
     }

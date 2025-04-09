@@ -33,7 +33,7 @@ public class GameRepl {
     }
 
     public void run() throws ResponseException {
-        System.out.printf("Welcome to the Game %s!%n", this.gameId);
+        System.out.printf("Welcome to the Game %s!%n", this.gameId-1111);
         while (active) {
             System.out.println("""
             Commands:
