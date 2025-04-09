@@ -38,7 +38,7 @@ public class WebSocketHandler {
 
         Matcher matcher = COMMAND_TYPE_PATTERN.matcher(msg);
         if (!matcher.find()) {
-            System.out.println("Invalid command received.");
+            System.out.println("Invalid command received");
             return;
         }
 
@@ -66,7 +66,7 @@ public class WebSocketHandler {
                 Redraw command = gson.fromJson(msg, Redraw.class);
                 redraw(session, command);
             }
-            default -> System.out.println("Unknown command received: " + commandType);
+            default -> System.out.println("Unknown command received " + commandType);
         }
     }
 
@@ -125,7 +125,6 @@ public class WebSocketHandler {
 
 
     private void error(Session session, websocket.messages.Error error) throws IOException {
-        System.out.printf("Error: %s%n", new Gson().toJson(error));
         session.getRemote().sendString(new Gson().toJson(error));
     }
 
@@ -145,7 +144,7 @@ public class WebSocketHandler {
         }
 
         if (gameData.game().checkGameOver()) {
-            String message = "The game is already over!";
+            String message = "The game is already over";
             websocket.messages.Error errorMsg = new websocket.messages.Error(message);
             ConnectionHandler.direct(errorMsg, session);
             return;
@@ -230,7 +229,7 @@ public class WebSocketHandler {
         ChessGame game = gameData.game();
         ChessMove newMove = command.getMove();
         if (playerColor != game.getTeamTurn()) {
-            var message = String.format("It's not %s's turn.", auth.username());
+            var message = String.format("It is not %s turn.", auth.username());
             Error notification = new Error(message);
             error(session, notification);
             return;

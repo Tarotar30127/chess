@@ -1,9 +1,6 @@
 package ui;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -111,54 +108,38 @@ public class BoardPrintLayout {
         }
         String characterPiece = null;
         if (focus.getTeamColor()== ChessGame.TeamColor.BLACK) {
-            switch (focus.getPieceType()){
-                case KING -> {
-                    characterPiece = BLACK_KING;
-                }
-                case QUEEN -> {
-                    characterPiece = BLACK_QUEEN;
-                }
-                case BISHOP -> {
-                    characterPiece = BLACK_BISHOP;
-                }
-                case KNIGHT -> {
-                    characterPiece = BLACK_KNIGHT;
-                }
-                case ROOK -> {
-                    characterPiece = BLACK_ROOK;
-                }
-                case PAWN -> {
-                    characterPiece = BLACK_PAWN;
-                }
-            }
-            out.print(characterPiece);
+            getPieceType(out, focus, characterPiece, BLACK_KING, BLACK_QUEEN, BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK, BLACK_PAWN);
 
         }
         else if (focus.getTeamColor() == ChessGame.TeamColor.WHITE){
-            switch (focus.getPieceType()){
-                case KING -> {
-                    characterPiece = WHITE_KING;
-                }
-                case QUEEN -> {
-                    characterPiece = WHITE_QUEEN;
-                }
-                case BISHOP -> {
-                    characterPiece = WHITE_BISHOP;
-                }
-                case KNIGHT -> {
-                    characterPiece = WHITE_KNIGHT;
-                }
-                case ROOK -> {
-                    characterPiece = WHITE_ROOK;
-                }
-                case PAWN -> {
-                    characterPiece = WHITE_PAWN;
-                }
-
-            }
-            out.print(characterPiece);
+            getPieceType(out, focus, characterPiece, WHITE_KING, WHITE_QUEEN, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK, WHITE_PAWN);
 
         }
+    }
+
+    private static void getPieceType(PrintStream out, ChessPiece focus, String characterPiece, String whiteKing, String whiteQueen, String whiteBishop, String whiteKnight, String whiteRook, String whitePawn) {
+        switch (focus.getPieceType()){
+            case KING -> {
+                characterPiece = whiteKing;
+            }
+            case QUEEN -> {
+                characterPiece = whiteQueen;
+            }
+            case BISHOP -> {
+                characterPiece = whiteBishop;
+            }
+            case KNIGHT -> {
+                characterPiece = whiteKnight;
+            }
+            case ROOK -> {
+                characterPiece = whiteRook;
+            }
+            case PAWN -> {
+                characterPiece = whitePawn;
+            }
+
+        }
+        out.print(characterPiece);
     }
 
     private static void printChar(PrintStream out, String s) {
@@ -183,6 +164,83 @@ public class BoardPrintLayout {
         out.print(SET_TEXT_COLOR_BLACK);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof BoardPrintLayout that)) {
+            return false;
+        }
+        return Objects.equals(currentGame, that.currentGame);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(currentGame);
+    }
+
+    public void highlightMoves(Collection<ChessMove> legalMoves, ChessGame.TeamColor color) {
+        Set<ChessPosition> possibleMoves = new HashSet<>();
+        ChessPosition startPosition = null;
+        for (ChessMove move : legalMoves) {
+            startPosition = move.getStartPosition();
+            possibleMoves.add(move.getEndPosition());
+        }
+
+        ChessBoard board = currentGame.getBoard();
+        PrintStream out = System.out;
+
+        List<Integer> rowOrder = (color == ChessGame.TeamColor.WHITE)
+                ? Arrays.asList(8, 7, 6, 5, 4, 3, 2, 1)
+                : Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8);
+
+        List<Integer> colOrder = (color == ChessGame.TeamColor.WHITE)
+                ? Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8)
+                : Arrays.asList(8, 7, 6, 5, 4, 3, 2, 1);
+
+        List<String> colLabels = (color == ChessGame.TeamColor.WHITE)
+                ? Arrays.asList(" A ", " B ", " C ", " D ", " E ", " F ", " G ", " H ")
+                : Arrays.asList(" H ", " G ", " F ", " E ", " D ", " C ", " B ", " A ");
+
+        drawHeaders(out, colLabels);
+
+        for (int row : rowOrder) {
+            setWhite(out);
+            out.print(" " + row + " ");
+            out.print(RESET_BG_COLOR);
+            for (int col : colOrder) {
+                ChessPosition pos = new ChessPosition(row, col);
+
+                if (possibleMoves.contains(pos)) {
+                    out.print(SET_BG_COLOR_YELLOW);
+                } else if (startPosition.equals(pos)) {
+                    out.print(SET_BG_COLOR_RED);
+                } else if ((row + col) % 2 == 0) {
+                    out.print(SET_BG_COLOR_LIGHT_GREY);
+                } else {
+                    out.print(SET_BG_COLOR_WHITE);
+                }
+
+                out.print(SET_TEXT_COLOR_BLACK);
+                ChessPiece piece = board.getPiece(pos);
+                if (piece == null) {
+                    out.print(EMPTY);
+                } else {
+                    placePiece(out, row, col, board);
+                }
+            }
+            setWhite(out);
+            out.print(" " + row + " ");
+            out.print(RESET_BG_COLOR);
+            out.println();
+        }
+
+        drawHeaders(out, colLabels);
+        out.print(RESET_BG_COLOR);
+        out.print(RESET_TEXT_COLOR);
+        
+    }
+
 }
+
+
 
 

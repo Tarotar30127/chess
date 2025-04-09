@@ -79,11 +79,12 @@ public class GameClient implements ServerMessageObserver{
     private String highlight() {
         ChessGame chessGame = localChess.getCurrentGame();
         System.out.println("Enter the Chess location of the piece you want to highlight legal moves for:");
-        System.out.println("Enter the row (1-8) of the piece:");
-        int startRow = Integer.parseInt(scanner.nextLine().strip());
         System.out.println("Enter the column (a-h) of the piece:");
         char startColChar = scanner.nextLine().strip().toLowerCase().charAt(0);
-        if (startRow < 1 || startRow > 8 || startColChar < 'a' || startColChar > 'h') {
+
+        System.out.println("Enter the row (1-8) of the piece:");
+        int startRow = Integer.parseInt(scanner.nextLine().strip());
+        if (startRow <=0 || startRow > 8 || startColChar <= 'a' || startColChar > 'h') {
             return "Invalid position! Please enter a valid row (1-8) and column (a-h).";
         }
         Map<Character, Integer> charToNumMap = Map.of(
@@ -95,9 +96,8 @@ public class GameClient implements ServerMessageObserver{
         if (legalMoves.isEmpty()) {
             return "No legal moves available for the selected piece!";
         }
-        for (ChessMove move : legalMoves) {
-            System.out.println("Legal move: " + move);
-        }
+        localChess.highlightMoves(legalMoves, colorTeam);
+        System.out.println(legalMoves);
         return "Legal moves have been highlighted for the selected piece.";
     }
 
@@ -130,32 +130,31 @@ public class GameClient implements ServerMessageObserver{
         );
         System.out.println("""
                 Enter the Chess location of the piece you want to move
-                Enter the row (1-8) of the piece you want to move:
-                Example: 1
-                Enter ->""");
-        int startRow = Integer.parseInt(scanner.nextLine().strip());
-        System.out.println("""
                 Enter the column (a-h) of the piece you want to move:
                 Example: a
                 Enter ->""");
         char startColChar = scanner.nextLine().strip().toLowerCase().charAt(0);
+        System.out.println("""
+                Enter the row (1-8) of the piece you want to move:
+                Example: 1
+                Enter ->""");
+        int startRow = Integer.parseInt(scanner.nextLine().strip());
         if (startRow < 1 || startRow > 8 || startColChar < 'a' || startColChar > 'h') {
             return "Invalid starting position! Please enter a valid row (1-8) and column (a-h)";
         }
-
         Integer startCol = charToNumMap.get(startColChar);
         ChessPosition startPosition = new ChessPosition(startRow, startCol);
         System.out.println("""
                 Enter the Chess location where you want to move the piece:
-                Enter the row (1-8) of where you want to move the piece:
-                Example: 4
-                Enter ->""");
-        int endRow = Integer.parseInt(scanner.nextLine().strip());
-        System.out.println("""
                 Enter the column (a-h) of where you want to move the piece:
                 Example: a
                 Enter ->""");
         char endColChar = scanner.nextLine().strip().toLowerCase().charAt(0);
+        System.out.println("""
+                Enter the row (1-8) of where you want to move the piece:
+                Example: 4
+                Enter ->""");
+        int endRow = Integer.parseInt(scanner.nextLine().strip());
         if (endRow < 1 || endRow > 8 || endColChar < 'a' || endColChar > 'h') {
             return "Invalid ending position! Please enter a valid row (1-8) and column (a-h)";
         }
@@ -182,7 +181,7 @@ public class GameClient implements ServerMessageObserver{
         }
         ChessMove move = new ChessMove(startPosition, endPosition, promotion);
         server.makeMove(new Make_Move(userAuth.authToken(), gameId, move));
-        return "Successfully move";
+        return "Successfully submitted move";
 
 
     }
@@ -216,11 +215,14 @@ public class GameClient implements ServerMessageObserver{
     @Override
     public void notify (String notification) {
         try {
+            System.out.print(notification);
             if (notification.contains("\"serverMessageType\":\"NOTIFICATION\"")) {
                 Notifcation notify = new Gson().fromJson(notification, Notifcation.class);
+                System.out.print(notify.getMessage());
                 printNotification(notify.getMessage());
             } else if (notification.contains("\"serverMessageType\":\"ERROR\"")) {
                 Error error = new Gson().fromJson(notification, Error.class);
+                System.out.print(error.getMessage());
                 printError(error.getMessage());
             } else if (notification.contains("\"serverMessageType\":\"LOAD_GAME\"")) {
                 LoadGame loadGame = new Gson().fromJson(notification, LoadGame.class);
