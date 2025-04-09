@@ -8,7 +8,7 @@ import websocket.messages.LoadGame;
 import websocket.messages.Notifcation;
 
 public interface ServerMessageObserver {
-    default void notify(String notification) {
+    default void notify(String notification){
         if (notification.contains("\"serverMessageType\":\"NOTIFICATION\"")) {
             Notifcation notify = new Gson().fromJson(notification, Notifcation.class);
             printNotification(notify.getMessage());
@@ -22,7 +22,6 @@ public interface ServerMessageObserver {
             printGame(loadGame.returnGame());
         }
     }
-
     private void printGame(ChessGame chessGame) {
         BoardPrintLayout.drawChessBoard(System.out, chessGame.getTeamTurn(), chessGame);
     }

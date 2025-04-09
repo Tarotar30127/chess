@@ -27,7 +27,6 @@ public class WebSocketHandler {
     private final ConnectionHandler connections = new ConnectionHandler();
     private static final Pattern COMMAND_TYPE_PATTERN = Pattern.compile("\"commandType\"\\s*:\\s*\"(\\w+)\"");
     private final Service service;
-    private boolean resign = false;
 
     public WebSocketHandler(Service service) {
         this.service = service;
@@ -79,8 +78,10 @@ public class WebSocketHandler {
             ConnectionHandler.direct(unauthorized, session);
         }
         int gameId = command.getGameID();
+        service.resetBoard(gameId);
         GameData gameData = service.getOneGame(gameId);
         LoadGame load = new LoadGame(gameData.game());
+        ConnectionHandler.broadcast(load, gameId, session);
         ConnectionHandler.direct(load, session);
     }
 
@@ -142,32 +143,28 @@ public class WebSocketHandler {
             error(session, notification);
             return;
         }
+
         if (gameData.game().checkGameOver()) {
             String message = "The game is already over!";
-            Notifcation notif = new Notifcation(message);
-            ConnectionHandler.broadcast(notif, gameId, session);
             websocket.messages.Error errorMsg = new websocket.messages.Error(message);
             ConnectionHandler.direct(errorMsg, session);
             return;
-        }else if(resign){
-            String message = "You can't resign twice";
-            websocket.messages.Error errorMsg = new websocket.messages.Error(message);
-            ConnectionHandler.direct(errorMsg, session);
-            return;
-        }
+       }
+
         String serverMessage = String.format("%s has resigned from the Game".formatted(auth.username()));
         ServerMessage msg = new Notifcation(serverMessage);
         ConnectionHandler.broadcast(msg, gameId, session);
         ConnectionHandler.direct(msg, session);
         gameData.game().setGameOver();
-        resign = true;
+        GameData updatedGameData = new GameData(
+                gameData.gameId(),
+                gameData.whiteUserName(),
+                gameData.blackUserName(),
+                gameData.gameName(),
+                gameData.game()
 
-//        LoadGame load = new LoadGame(gameData.game());
-//        ConnectionHandler.broadcast(load, gameId, session);
-//        service.resetBoard(gameId);
-//        GameData newGame = service.getOneGame(gameId);
-//        LoadGame secondLoad = new LoadGame(newGame.game());
-//        ConnectionHandler.broadcast(secondLoad, gameId, session);
+        );
+        service.updateBoard(updatedGameData);
 
     }
 
@@ -217,15 +214,6 @@ public class WebSocketHandler {
             var message = String.format("The game is already over!");
             Error notification = new Error(message);
             error(session, notification);
-
-            LoadGame load = new LoadGame(gameData.game());
-            ConnectionHandler.broadcast(load, gameId, session);
-            ConnectionHandler.direct(load, session);
-            return;
-        } else if (resign){
-            var message = String.format("The game is already over!");
-            Error notification = new Error(message);
-            error(session, notification);
             return;
         }
         ChessGame.TeamColor playerColor = null;
@@ -270,15 +258,17 @@ public class WebSocketHandler {
         LoadGame load = new LoadGame(updatedGameData.game());
         ConnectionHandler.broadcast(load, gameId, session);
         ConnectionHandler.direct(load, session);
+        var moveMessage = new Notifcation(auth.username() + " made a move.");
+        ConnectionHandler.broadcast(moveMessage, gameId, session);
         if (checkmate) {
             var gameOverMsg = new Notifcation("Checkmate! " + playerColor + " wins.");
             ConnectionHandler.broadcast(gameOverMsg, gameId, session);
+            ConnectionHandler.direct(gameOverMsg, session);
+
         } else if (stalemate) {
             var gameOverMsg = new Notifcation("Stalemate! The game is a draw.");
             ConnectionHandler.broadcast(gameOverMsg, gameId, session);
-        }else{
-            var moveMessage = new Notifcation(auth.username() + " made a move.");
-            ConnectionHandler.broadcast(moveMessage, gameId, session);
+            ConnectionHandler.direct(gameOverMsg, session);
 
         }
     }

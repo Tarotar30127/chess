@@ -1,7 +1,6 @@
 package client;
 import exception.ResponseException;
 import model.AuthData;
-import model.GameData;
 import websocket.commands.*;
 
 
@@ -12,17 +11,18 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ServerFacade implements ServerMessageObserver {
+public class ServerFacade {
     private final HttpCommunicator httpCommunicator;
     private final String serverUrl;
     WebSocketCommunicator webSocketCommunicator;
     String authToken;
+    ServerMessageObserver notify;
 
-
-
+    public void passinNotify(ServerMessageObserver notification){
+        notify = notification;
+    }
     public ServerFacade(String url){
         serverUrl = url;
-        this.webSocketCommunicator = new WebSocketCommunicator(serverUrl, this);
         this.httpCommunicator = new HttpCommunicator(url);
         this.authToken = null;
 
@@ -112,11 +112,13 @@ public class ServerFacade implements ServerMessageObserver {
 
 
 
-    public void joinPlayer(Connect command) throws ResponseException {
+    public void joinPlayer(Connect command, ServerMessageObserver notify) throws ResponseException {
+        this.webSocketCommunicator = new WebSocketCommunicator(serverUrl, notify);
         webSocketCommunicator.send(command);
     }
 
-    public void joinObserver(Connect command) throws ResponseException {
+    public void joinObserver(Connect command, ServerMessageObserver notify) throws ResponseException {
+        this.webSocketCommunicator = new WebSocketCommunicator(serverUrl, notify);
         webSocketCommunicator.send(command);
     }
 

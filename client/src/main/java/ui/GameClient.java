@@ -25,13 +25,13 @@ public class GameClient implements ServerMessageObserver{
     private boolean obsever;
 
 
-    public GameClient(String serverUrl, AuthData auth, int gameID, ChessGame.TeamColor color) throws ResponseException {
+    public GameClient(String serverUrl, AuthData auth, int gameID, ChessGame.TeamColor color)  {
         this.userAuth = auth;
         this.obsever= false;
         this.colorTeam = color;
         this.gameId = gameID;
         this.server = new ServerFacade(serverUrl);
-        this.server = new ServerFacade(serverUrl);
+        server.passinNotify(this);
         ws = new WebSocketCommunicator(serverUrl, this);
     }
 
@@ -45,8 +45,14 @@ public class GameClient implements ServerMessageObserver{
             case 4 -> makeMove();
             case 5 -> resign();
             case 6 -> highlight();
+            case 7 -> resetBoard();
             default -> "Invalid command";
         };
+    }
+
+    private String resetBoard() throws ResponseException {
+        server.redraw(new Redraw(userAuth.authToken(), gameId));
+        return "";
     }
 
     private String highlight() {
@@ -165,9 +171,8 @@ public class GameClient implements ServerMessageObserver{
         return "Exiting Game";
     }
 
-    private String redraw() throws ResponseException {
-        server.redraw(new Redraw(userAuth.authToken(), gameId));
-        return "";
+    private String redraw() {
+        return"";
     }
 
     private String help() {
@@ -181,4 +186,5 @@ public class GameClient implements ServerMessageObserver{
             - Highlight Legal Moves: Allows the user to input the piece for which they want to highlight legal moves. The selected piece’s current square and all squares it can legally move to are highlighted. This is a local operation and has no effect on remote users’ screens.
             """;
     }
+
 }
