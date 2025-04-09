@@ -11,6 +11,7 @@ import websocket.commands.Make_Move;
 import websocket.commands.Redraw;
 import websocket.commands.Resign;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -49,10 +50,28 @@ public class GameClient implements ServerMessageObserver{
     }
 
     private String highlight() {
-        if (obsever == true) {
-            return "You are Observing!";
+        ChessGame chessGame = new ChessGame();
+        System.out.println("Enter the Chess location of the piece you want to highlight legal moves for:");
+        System.out.println("Enter the row (1-8) of the piece:");
+        int startRow = Integer.parseInt(scanner.nextLine().strip());
+        System.out.println("Enter the column (a-h) of the piece:");
+        char startColChar = scanner.nextLine().strip().toLowerCase().charAt(0);
+        if (startRow < 1 || startRow > 8 || startColChar < 'a' || startColChar > 'h') {
+            return "Invalid position! Please enter a valid row (1-8) and column (a-h).";
         }
-        return "";
+        Map<Character, Integer> charToNumMap = Map.of(
+                'a', 1, 'b', 2, 'c', 3, 'd', 4, 'e', 5, 'f', 6, 'g', 7, 'h', 8
+        );
+        Integer startCol = charToNumMap.get(startColChar);
+        ChessPosition startPosition = new ChessPosition(startRow, startCol);
+        Collection<ChessMove> legalMoves = chessGame.validMoves(startPosition);
+        if (legalMoves.isEmpty()) {
+            return "No legal moves available for the selected piece!";
+        }
+        for (ChessMove move : legalMoves) {
+            System.out.println("Legal move: " + move);
+        }
+        return "Legal moves have been highlighted for the selected piece.";
     }
 
     private String resign() throws ResponseException {
