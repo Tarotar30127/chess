@@ -2,6 +2,7 @@ package server;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPosition;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import exception.ResponseException;
@@ -244,9 +245,6 @@ public class WebSocketHandler {
             error(session, notification);
             return;
         }
-        boolean checkmate = game.isInCheckmate(game.getTeamTurn());
-        boolean stalemate = game.isInStalemate(game.getTeamTurn());
-
         GameData updatedGameData = new GameData(
                 gameId,
                 gameData.whiteUserName(),
@@ -259,18 +257,31 @@ public class WebSocketHandler {
         LoadGame load = new LoadGame(updatedGameData.game());
         ConnectionHandler.broadcast(load, gameId, session);
         ConnectionHandler.direct(load, session);
-        var moveMessage = new Notifcation(auth.username() + " made a move to "+ newMove.getEndPosition());
+        ChessPosition end = newMove.getEndPosition();
+        var moveMessage = new Notifcation(auth.username() + " made a move to "+ "column: "+end.getColumn()+" row: "+end.getRow());
         ConnectionHandler.broadcast(moveMessage, gameId, session);
-        if (checkmate) {
+        ChessGame.TeamColor oppColor;
+        String strOppColor;
+        if (playerColor == ChessGame.TeamColor.WHITE) {
+            oppColor = ChessGame.TeamColor.BLACK;
+            strOppColor = "black";
+        } else {
+            oppColor = ChessGame.TeamColor.WHITE;
+            strOppColor = "white";
+        }
+        if (updatedGameData.game().isInCheckmate(oppColor)) {
             var gameOverMsg = new Notifcation("Checkmate " + playerColor + " wins.");
             ConnectionHandler.broadcast(gameOverMsg, gameId, session);
             ConnectionHandler.direct(gameOverMsg, session);
 
-        } else if (stalemate) {
-            var gameOverMsg = new Notifcation("Stalemate The game is a draw.");
+        } else if (updatedGameData.game().isInStalemate(oppColor)) {
+            var gameOverMsg = new Notifcation("%s move resulted in a stalemate The game is a draw.".formatted(auth.username()));
             ConnectionHandler.broadcast(gameOverMsg, gameId, session);
             ConnectionHandler.direct(gameOverMsg, session);
-
+        } else if (updatedGameData.game().isInCheck(oppColor)){
+            var gameOverMsg = new Notifcation("%s move resulted in %s being in check".formatted(auth.username(), strOppColor));
+            ConnectionHandler.broadcast(gameOverMsg, gameId, session);
+            ConnectionHandler.direct(gameOverMsg, session);
         }
     }
 

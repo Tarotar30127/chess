@@ -12,6 +12,7 @@ import websocket.messages.LoadGame;
 import websocket.messages.Notifcation;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -76,19 +77,31 @@ public class GameClient implements ServerMessageObserver{
         return "";
     }
 
-    private String highlight() {
+    private String highlight() throws ResponseException {
         ChessGame chessGame = localChess.getCurrentGame();
         System.out.println("Enter the Chess location of the piece you want to highlight legal moves for:");
         System.out.println("Enter the column (a-h) of the piece:");
-        char startColChar = SCANNER.nextLine().strip().toLowerCase().charAt(0);
+        char startColChar = 0;
+        int startCol = 0;
+        try {
+            startColChar = SCANNER.nextLine().strip().toLowerCase().charAt(0);
+
+            Map<Character, Integer> charToNumMap = getCharToNumMap();;
+            startCol = charToNumMap.get(startColChar);
+        } catch (Exception e) {
+            System.out.println("Invalid input. Please enter a letter from a to h.");
+            return "Highlight canceled.";
+        }
 
         System.out.println("Enter the row (1-8) of the piece:");
-        int startRow = Integer.parseInt(SCANNER.nextLine().strip());
+        int startRow;
+        try {
+            startRow = Integer.parseInt(SCANNER.nextLine().strip());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid row input. Please enter a number from 1 to 8.");
+            return "Highlight canceled.";
+        }
 
-        Map<Character, Integer> charToNumMap = Map.of(
-                'a', 1, 'b', 2, 'c', 3, 'd', 4, 'e', 5, 'f', 6, 'g', 7, 'h', 8
-        );
-        int startCol = charToNumMap.get(startColChar);
         if (startRow < 0 || startRow > 9 || startCol < 0 || startCol > 9) {
             return "Invalid position! Please enter a valid row (1-8) and column (a-h).";
         }
@@ -102,6 +115,20 @@ public class GameClient implements ServerMessageObserver{
         return "Legal moves have been highlighted for the selected piece.";
     }
 
+    private Map<Character, Integer> getCharToNumMap() {
+        Map<Character, Integer> charToNumMap = new HashMap<>();
+        if (colorTeam == ChessGame.TeamColor.WHITE) {
+            for (char col = 'a'; col <= 'h'; col++) {
+                charToNumMap.put(col, col - 'a' + 1);
+            }
+        } else if (colorTeam == ChessGame.TeamColor.BLACK) {
+            for (char col = 'a'; col <= 'h'; col++) {
+                charToNumMap.put(col, 9 - (col - 'a' + 1));
+            }
+        }
+        return charToNumMap;
+    }
+
     private String resign() throws ResponseException {
         if (obsever == true) {
             return "You are Observing!";
@@ -109,53 +136,65 @@ public class GameClient implements ServerMessageObserver{
         System.out.println("Are you sure you want to resign?\n");
         System.out.println("Enter Yes or No: ");
         String answer = SCANNER.nextLine();
-        if (answer.toLowerCase() == "yes") {
-            server.resign(new Resign(userAuth.authToken(), gameId, colorTeam));
+        try {
+            if (answer.toLowerCase().equals("yes")) {
+                server.resign(new Resign(userAuth.authToken(), gameId, colorTeam));
+                return "Good Game";
+            }else {
+                return "Good Luck! You can Win!";
+            }
+        } catch (ResponseException e) {
+            System.out.println("Invalid answer. Please enter yes or no.");
+            return "Resign canceled.";
         }
-        return "Good Luck! You can Win!";
     }
 
     private String makeMove() throws ResponseException {
         if (obsever == true) {
             return "You are Observing!";
         }
-        Map<Character, Integer> charToNumMap = Map.of(
-                'a', 1,
-                'b', 2,
-                'c', 3,
-                'd', 4,
-                'e', 5,
-                'f', 6,
-                'g', 7,
-                'h', 8
-        );
-        System.out.println("""
-                Enter the Chess location of the piece you want to move
-                Enter the column (a-h) of the piece you want to move:
-                Example: a
-                Enter ->""");
-        char startColChar = SCANNER.nextLine().strip().toLowerCase().charAt(0);
-        System.out.println("""
-                Enter the row (1-8) of the piece you want to move:
-                Example: 1
-                Enter ->""");
-        ChessPosition startPosition = getChessPosition(charToNumMap, startColChar);
+        Map<Character, Integer> charToNumMap = getCharToNumMap();
+        ChessPosition startPosition = null;
+        try {
+            System.out.println("""
+                    Enter the Chess location of the piece you want to move
+                    Enter the column (a-h) of the piece you want to move:
+                    Example: a
+                    Enter ->""");
+            char startColChar = SCANNER.nextLine().strip().toLowerCase().charAt(0);
+            System.out.println("""
+                    Enter the row (1-8) of the piece you want to move:
+                    Example: 1
+                    Enter ->""");
+            startPosition = getChessPosition(charToNumMap, startColChar);
+        } catch (Exception e) {
+            System.out.println("Invalid column or row input. Please enter a letter or number from a to h or 1 to 8.");
+            return "Make Move canceled.";
+        }
         if (startPosition == null) {
             return "invalid input";
         }
-        System.out.println("""
-                Enter the Chess location where you want to move the piece:
-                Enter the column (a-h) of where you want to move the piece:
-                Example: a
-                Enter ->""");
-        char endColChar = SCANNER.nextLine().strip().toLowerCase().charAt(0);
-        System.out.println("""
-                Enter the row (1-8) of where you want to move the piece:
-                Example: 4
-                Enter ->""");
-        int endRow = Integer.parseInt(SCANNER.nextLine().strip());
-        int endCol = charToNumMap.get(endColChar);
-        ChessPosition endPosition = new ChessPosition(endRow, endCol);
+        int endRow = 0;
+        int endCol = 0;
+        ChessPosition endPosition = null;
+        try {
+            System.out.println("""
+                    Enter the Chess location where you want to move the piece:
+                    Enter the column (a-h) of where you want to move the piece:
+                    Example: a
+                    Enter ->""");
+            char endColChar = SCANNER.nextLine().strip().toLowerCase().charAt(0);
+            System.out.println("""
+                    Enter the row (1-8) of where you want to move the piece:
+                    Example: 4
+                    Enter ->""");
+            endRow = Integer.parseInt(SCANNER.nextLine().strip());
+            endCol = charToNumMap.get(endColChar);
+            endPosition = new ChessPosition(endRow, endCol);
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid column or row input. Please enter a letter or number from a to h or 1 to 8.");
+            return "Make Move canceled.";
+        }
         if((endCol < 0)||(endCol>9)||(endRow < 0)||(endRow>9)){
             return "invalid input";
         }
