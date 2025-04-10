@@ -7,7 +7,6 @@ import client.WebSocketCommunicator;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.AuthData;
-import org.jetbrains.annotations.Nullable;
 import websocket.commands.*;
 import websocket.messages.LoadGame;
 import websocket.messages.Notifcation;
