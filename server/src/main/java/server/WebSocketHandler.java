@@ -258,19 +258,25 @@ public class WebSocketHandler {
         ConnectionHandler.broadcast(load, gameId, session);
         ConnectionHandler.direct(load, session);
         ChessPosition end = newMove.getEndPosition();
-        var moveMessage = new Notifcation(auth.username() + " made a move to "+ "column: "+end.getColumn()+" row: "+end.getRow());
+        ChessPosition start = newMove.getStartPosition();
+        var moveMessage = new Notifcation(auth.username() + " made a move to "+ "column: "+end.getColumn()+
+                " row: "+end.getRow() + " to column: "+start.getColumn()+" row: "+start.getRow());
         ConnectionHandler.broadcast(moveMessage, gameId, session);
         ChessGame.TeamColor oppColor;
         String strOppColor;
+        String oppName;
         if (playerColor == ChessGame.TeamColor.WHITE) {
             oppColor = ChessGame.TeamColor.BLACK;
             strOppColor = "black";
+            oppName = updatedGameData.blackUserName();
         } else {
             oppColor = ChessGame.TeamColor.WHITE;
             strOppColor = "white";
+            oppName = updatedGameData.whiteUserName();
+
         }
         if (updatedGameData.game().isInCheckmate(oppColor)) {
-            var gameOverMsg = new Notifcation("Checkmate " + playerColor + " wins.");
+            var gameOverMsg = new Notifcation(oppName + " has been checkmated " + playerColor + " wins.");
             ConnectionHandler.broadcast(gameOverMsg, gameId, session);
             ConnectionHandler.direct(gameOverMsg, session);
 
@@ -279,7 +285,7 @@ public class WebSocketHandler {
             ConnectionHandler.broadcast(gameOverMsg, gameId, session);
             ConnectionHandler.direct(gameOverMsg, session);
         } else if (updatedGameData.game().isInCheck(oppColor)){
-            var gameOverMsg = new Notifcation("%s move resulted in %s being in check".formatted(auth.username(), strOppColor));
+            var gameOverMsg = new Notifcation("%s move resulted in %s %s being in check".formatted(auth.username(), strOppColor, oppName));
             ConnectionHandler.broadcast(gameOverMsg, gameId, session);
             ConnectionHandler.direct(gameOverMsg, session);
         }

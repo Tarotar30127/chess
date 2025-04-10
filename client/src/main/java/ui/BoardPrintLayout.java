@@ -35,7 +35,7 @@ public class BoardPrintLayout {
         drawHeaders(out, columns);
         ChessBoard board = game.getBoard();
         for (int row = 8; row >= 1; row--) {
-            drawRow(out, board, row, columns);
+            drawRow(out, board, row, columns, false);
         }
         drawHeaders(out, columns);
     }
@@ -45,7 +45,7 @@ public class BoardPrintLayout {
         drawHeaders(out, columns);
         ChessBoard board = game.getBoard();
         for (int row = 1; row <= 8; row++) {
-            drawRow(out, board, row, columns);
+            drawRow(out, board, row, columns, true);
         }
         drawHeaders(out, columns);
     }
@@ -60,27 +60,37 @@ public class BoardPrintLayout {
         out.print(RESET_BG_COLOR);
         out.println();
     }
-    private static void drawRow(PrintStream out, ChessBoard board, int row, List<String> columns) {
+    private static void drawRow(PrintStream out, ChessBoard board, int row, List<String> columns, boolean white) {
         String rowLabel = String.valueOf(row);
-        if (row % 2 == 1) {
-            drawOddRow(out, rowLabel, row, board);
-        } else {
-            drawEvenRow(out, rowLabel, row, board);
+
+        List<Integer> columnIndices = new ArrayList<>();
+        for (String label : columns) {
+            char colChar = label.trim().charAt(0);
+            int col = colChar - 'A' + 1;
+            columnIndices.add(col);
+        }
+        if (!white){
+            if (row % 2 == 1) {
+                drawRowWithCustomColumns(out, rowLabel, row, board, columnIndices, SET_BG_COLOR_WHITE, SET_BG_COLOR_LIGHT_GREY);
+            } else {
+                drawRowWithCustomColumns(out, rowLabel, row, board, columnIndices, SET_BG_COLOR_LIGHT_GREY, SET_BG_COLOR_WHITE);
+            }
+        }else{
+            if (row % 2 == 1) {
+                drawRowWithCustomColumns(out, rowLabel, row, board, columnIndices, SET_BG_COLOR_LIGHT_GREY, SET_BG_COLOR_WHITE);
+            } else {
+                drawRowWithCustomColumns(out, rowLabel, row, board, columnIndices, SET_BG_COLOR_WHITE, SET_BG_COLOR_LIGHT_GREY);
+            }
         }
     }
 
-    private static void drawOddRow(PrintStream out, String fileLabel, int row, ChessBoard board) {
-        dup(out, fileLabel, row, board, SET_BG_COLOR_WHITE, SET_BG_COLOR_LIGHT_GREY);
-    }
+    private static void drawRowWithCustomColumns(PrintStream out, String rowLabel, int row, ChessBoard board,
+                                                 List<Integer> columnIndices, String color1, String color2) {
+        drawFileLabel(out, rowLabel);
 
-    private static void drawEvenRow(PrintStream out, String fileLabel, int row, ChessBoard board) {
-        dup(out, fileLabel, row, board, SET_BG_COLOR_LIGHT_GREY, SET_BG_COLOR_WHITE);
-    }
-
-    private static void dup(PrintStream out, String fileLabel, int row, ChessBoard board, String color1, String color2) {
-        drawFileLabel(out, fileLabel);
-        for (int col = 1; col <= 8; col++) {
-            if (col % 2 == 0) {
+        for (int i = 0; i < columnIndices.size(); i++) {
+            int col = columnIndices.get(i);
+            if (i % 2 == 0) {
                 out.print(color1);
             } else {
                 out.print(color2);
@@ -88,9 +98,27 @@ public class BoardPrintLayout {
             out.print(SET_TEXT_COLOR_BLACK);
             placePiece(out, row, col, board);
         }
-        drawFileLabel(out, fileLabel);
+
+        drawFileLabel(out, rowLabel);
         out.println();
     }
+
+
+
+//    private static void dup(PrintStream out, String fileLabel, int row, ChessBoard board, String color1, String color2) {
+//        drawFileLabel(out, fileLabel);
+//        for (int col = 1; col <= 8; col++) {
+//            if (col % 2 == 0) {
+//                out.print(color1);
+//            } else {
+//                out.print(color2);
+//            }
+//            out.print(SET_TEXT_COLOR_BLACK);
+//            placePiece(out, row, col, board);
+//        }
+//        drawFileLabel(out, fileLabel);
+//        out.println();
+//    }
 
     private static void drawFileLabel(PrintStream out, String fileLabel) {
         setWhite(out);
@@ -196,14 +224,19 @@ public class BoardPrintLayout {
             for (int col : colOrder) {
                 ChessPosition pos = new ChessPosition(row, col);
 
-                if (possibleMoves.contains(pos)) {
-                    out.print(SET_BG_COLOR_YELLOW);
-                } else if (startPosition.equals(pos)) {
-                    out.print(SET_BG_COLOR_RED);
-                } else if ((row + col) % 2 == 0) {
-                    out.print(SET_BG_COLOR_LIGHT_GREY);
-                } else {
-                    out.print(SET_BG_COLOR_WHITE);
+                try {
+                    if (possibleMoves.contains(pos)) {
+                        out.print(SET_BG_COLOR_YELLOW);
+                    } else if (startPosition.equals(pos)) {
+                        out.print(SET_BG_COLOR_RED);
+                    } else if ((row + col) % 2 == 0) {
+                        out.print(SET_BG_COLOR_LIGHT_GREY);
+                    } else {
+                        out.print(SET_BG_COLOR_WHITE);
+                    }
+                } catch (Exception e) {
+                    System.out.print("error in highlight printing method");
+                    return;
                 }
 
                 out.print(SET_TEXT_COLOR_BLACK);

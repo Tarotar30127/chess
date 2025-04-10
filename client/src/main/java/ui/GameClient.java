@@ -12,7 +12,7 @@ import websocket.messages.LoadGame;
 import websocket.messages.Notifcation;
 
 import java.util.Collection;
-import java.util.HashMap;
+
 import java.util.Map;
 import java.util.Scanner;
 
@@ -89,7 +89,7 @@ public class GameClient implements ServerMessageObserver{
             Map<Character, Integer> charToNumMap = Map.of(
                     'a', 1, 'b', 2, 'c', 3, 'd', 4,
                     'e', 5, 'f', 6, 'g', 7, 'h', 8
-            );;
+            );
             startCol = charToNumMap.get(startColChar);
         } catch (Exception e) {
             System.out.println("Invalid input. Please enter a letter from a to h.");
@@ -115,22 +115,20 @@ public class GameClient implements ServerMessageObserver{
         } catch (Exception e) {
             return "No legal moves available for the selected piece!";
         }
-
-        localChess.highlightMoves(legalMoves, colorTeam);
-        return "Legal moves have been highlighted for the selected piece.";
+        if (legalMoves.isEmpty()){
+            return " no legal moves for " + "Column: " + startCol + " Row: " + startRow;
+        }else {
+            localChess.highlightMoves(legalMoves, colorTeam);
+            return "Legal moves have been highlighted for the selected piece.";
+        }
     }
 
     private Map<Character, Integer> getCharToNumMap() {
-        Map<Character, Integer> charToNumMap = new HashMap<>();
-        if (colorTeam == ChessGame.TeamColor.WHITE) {
-            for (char col = 'a'; col <= 'h'; col++) {
-                charToNumMap.put(col, col - 'a' + 1);
-            }
-        } else if (colorTeam == ChessGame.TeamColor.BLACK) {
-            for (char col = 'a'; col <= 'h'; col++) {
-                charToNumMap.put(col, 9 - (col - 'a' + 1));
-            }
-        }
+        Map<Character, Integer> charToNumMap;
+        charToNumMap = Map.of(
+                'a', 1, 'b', 2, 'c', 3, 'd', 4,
+                'e', 5, 'f', 6, 'g', 7, 'h', 8
+        );
         return charToNumMap;
     }
 
