@@ -86,7 +86,10 @@ public class GameClient implements ServerMessageObserver{
         try {
             startColChar = SCANNER.nextLine().strip().toLowerCase().charAt(0);
 
-            Map<Character, Integer> charToNumMap = getCharToNumMap();;
+            Map<Character, Integer> charToNumMap = Map.of(
+                    'a', 1, 'b', 2, 'c', 3, 'd', 4,
+                    'e', 5, 'f', 6, 'g', 7, 'h', 8
+            );;
             startCol = charToNumMap.get(startColChar);
         } catch (Exception e) {
             System.out.println("Invalid input. Please enter a letter from a to h.");
@@ -106,12 +109,14 @@ public class GameClient implements ServerMessageObserver{
             return "Invalid position! Please enter a valid row (1-8) and column (a-h).";
         }
         ChessPosition startPosition = new ChessPosition(startRow, startCol);
-        Collection<ChessMove> legalMoves = chessGame.validMoves(startPosition);
-        if (legalMoves.isEmpty()) {
+        Collection<ChessMove> legalMoves = null;
+        try {
+            legalMoves = chessGame.validMoves(startPosition);
+        } catch (Exception e) {
             return "No legal moves available for the selected piece!";
         }
+
         localChess.highlightMoves(legalMoves, colorTeam);
-        System.out.println(legalMoves);
         return "Legal moves have been highlighted for the selected piece.";
     }
 

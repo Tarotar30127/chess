@@ -47,7 +47,13 @@ public class GameRepl {
             Enter the number for the command:""");
             System.out.println("Game->");
             String command = scanner.nextLine();
-            String com = client.eval(command, this.observer);
+            String com = null;
+            try {
+                com = client.eval(command, this.observer);
+            } catch (ResponseException e) {
+                System.out.println("Invalid command: type only 1 - 8 ");
+
+            }
             if (com.contains("Exiting")){
                 deactivate();
             }
