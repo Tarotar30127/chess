@@ -117,7 +117,9 @@ public class BoardPrintLayout {
         }
     }
 
-    private static void getPieceType(PrintStream out, ChessPiece focus, String characterPiece, String whiteKing, String whiteQueen, String whiteBishop, String whiteKnight, String whiteRook, String whitePawn) {
+    private static void getPieceType(PrintStream out, ChessPiece focus, String characterPiece,
+                                     String whiteKing, String whiteQueen, String whiteBishop, String whiteKnight,
+                                     String whiteRook, String whitePawn) {
         switch (focus.getPieceType()){
             case KING -> {
                 characterPiece = whiteKing;
@@ -142,27 +144,12 @@ public class BoardPrintLayout {
         out.print(characterPiece);
     }
 
-    private static void printChar(PrintStream out, String s) {
-        out.print(SET_BG_COLOR_WHITE);
-        out.print(SET_TEXT_COLOR_BLACK);
-        out.print(s);
-        setWhite(out);
-    }
 
     private static void setWhite(PrintStream out) {
         out.print(SET_BG_COLOR_WHITE);
         out.print(SET_TEXT_COLOR_BLACK);
     }
 
-    private static void setGrey(PrintStream out) {
-        out.print(SET_BG_COLOR_DARK_GREY);
-        out.print(SET_TEXT_COLOR_WHITE);
-    }
-
-    private static void setBlack(PrintStream out) {
-        out.print(SET_BG_COLOR_BLACK);
-        out.print(SET_TEXT_COLOR_BLACK);
-    }
 
     @Override
     public boolean equals(Object o) {

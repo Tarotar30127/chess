@@ -6,27 +6,26 @@ import websocket.messages.Notifcation;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionHandler {
-    private static final ConcurrentHashMap<Session, Connection> connections = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Session, Connection> CONNECTIONS = new ConcurrentHashMap<>();
 
     public void add(Session session, int gameId,String serveMessage) throws IOException {
         var connection = new Connection(session, gameId);
-        connections.put(session, connection);
+        CONNECTIONS.put(session, connection);
         Notifcation notifcation = new Notifcation(serveMessage);
         broadcast(notifcation, gameId, session);
     }
 
     public void remove(Session session) {
-        connections.remove(session);
+        CONNECTIONS.remove(session);
     }
 
     public static void broadcast(ServerMessage notification, int gameId, Session senderSession) throws IOException {
         String jsonNotification = new Gson().toJson(notification);
 
-        for (var entry : connections.entrySet()) {
+        for (var entry : CONNECTIONS.entrySet()) {
             Session session = entry.getKey();
             Connection conn = entry.getValue();
 

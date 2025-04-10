@@ -129,7 +129,7 @@ public class ServerFacade {
         webSocketCommunicator.send(command);
     }
 
-    public void makeMove(Make_Move command) throws ResponseException {
+    public void makeMove(MakeMove command) throws ResponseException {
         webSocketCommunicator.send(command);
     }
     public void redraw(Redraw command) throws ResponseException {

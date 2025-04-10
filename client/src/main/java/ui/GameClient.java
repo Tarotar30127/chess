@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class GameClient implements ServerMessageObserver{
-    private static final Scanner scanner = new Scanner(System.in);
+    private static final Scanner SCANNER = new Scanner(System.in);
     private ServerFacade server;
     private WebSocketCommunicator ws;
     private AuthData userAuth;
@@ -80,10 +80,10 @@ public class GameClient implements ServerMessageObserver{
         ChessGame chessGame = localChess.getCurrentGame();
         System.out.println("Enter the Chess location of the piece you want to highlight legal moves for:");
         System.out.println("Enter the column (a-h) of the piece:");
-        char startColChar = scanner.nextLine().strip().toLowerCase().charAt(0);
+        char startColChar = SCANNER.nextLine().strip().toLowerCase().charAt(0);
 
         System.out.println("Enter the row (1-8) of the piece:");
-        int startRow = Integer.parseInt(scanner.nextLine().strip());
+        int startRow = Integer.parseInt(SCANNER.nextLine().strip());
 
         Map<Character, Integer> charToNumMap = Map.of(
                 'a', 1, 'b', 2, 'c', 3, 'd', 4, 'e', 5, 'f', 6, 'g', 7, 'h', 8
@@ -108,7 +108,7 @@ public class GameClient implements ServerMessageObserver{
         }
         System.out.println("Are you sure you want to resign?\n");
         System.out.println("Enter Yes or No: ");
-        String answer = scanner.nextLine();
+        String answer = SCANNER.nextLine();
         if (answer.toLowerCase() == "yes") {
             server.resign(new Resign(userAuth.authToken(), gameId, colorTeam));
         }
@@ -134,7 +134,7 @@ public class GameClient implements ServerMessageObserver{
                 Enter the column (a-h) of the piece you want to move:
                 Example: a
                 Enter ->""");
-        char startColChar = scanner.nextLine().strip().toLowerCase().charAt(0);
+        char startColChar = SCANNER.nextLine().strip().toLowerCase().charAt(0);
         System.out.println("""
                 Enter the row (1-8) of the piece you want to move:
                 Example: 1
@@ -148,25 +148,25 @@ public class GameClient implements ServerMessageObserver{
                 Enter the column (a-h) of where you want to move the piece:
                 Example: a
                 Enter ->""");
-        char endColChar = scanner.nextLine().strip().toLowerCase().charAt(0);
+        char endColChar = SCANNER.nextLine().strip().toLowerCase().charAt(0);
         System.out.println("""
                 Enter the row (1-8) of where you want to move the piece:
                 Example: 4
                 Enter ->""");
-        int endRow = Integer.parseInt(scanner.nextLine().strip());
+        int endRow = Integer.parseInt(SCANNER.nextLine().strip());
         int endCol = charToNumMap.get(endColChar);
         ChessPosition endPosition = new ChessPosition(endRow, endCol);
         if((endCol < 0)||(endCol>9)||(endRow < 0)||(endRow>9)){
             return "invalid input";
         }
         System.out.println("Do you want to promote a pawn? (yes/no)");
-        String response = scanner.nextLine().strip().toLowerCase();
+        String response = SCANNER.nextLine().strip().toLowerCase();
         ChessPiece.PieceType promotion = null;
         if (response.equals("yes")) {
             System.out.println("""
                     What would you like to promote it to: (Queen, Rook, Bishop, Knight)
                     Enter the piece ->""");
-            String promotionInput = scanner.nextLine().strip().toLowerCase();
+            String promotionInput = SCANNER.nextLine().strip().toLowerCase();
             switch (promotionInput) {
                 case "queen" -> promotion = ChessPiece.PieceType.QUEEN;
                 case "rook" -> promotion = ChessPiece.PieceType.ROOK;
@@ -179,13 +179,13 @@ public class GameClient implements ServerMessageObserver{
             }
         }
         ChessMove move = new ChessMove(startPosition, endPosition, promotion);
-        server.makeMove(new Make_Move(userAuth.authToken(), gameId, move));
+        server.makeMove(new MakeMove(userAuth.authToken(), gameId, move));
         return "Successfully submitted move";
 
     }
 
     private static ChessPosition getChessPosition (Map<Character, Integer> charToNumMap, char startColChar) {
-        int startRow = Integer.parseInt(scanner.nextLine().strip());
+        int startRow = Integer.parseInt(SCANNER.nextLine().strip());
         int startCol = charToNumMap.get(startColChar);
         ChessPosition startPosition = new ChessPosition(startRow, startCol);
         if((startCol < 0)||(startCol>9)||(startRow < 0)||(startRow>9)){
@@ -214,10 +214,16 @@ public class GameClient implements ServerMessageObserver{
             - Help: Displays text informing the user what actions they can take.
             - Redraw Chess Board: Redraws the chess board upon the user’s request.
             - Leave: Removes the user from the game. The client transitions back to the Post-Login UI.
-            - Make Move: Allows the user to input what move they want to make. The board is updated to reflect the result of the move, and the board automatically updates on all clients involved in the game.
-            - Resign: Prompts the user to confirm they want to resign. If they do, the user forfeits the game and the game is over. Does not cause the user to leave the game.
-            - Highlight Legal Moves: Allows the user to input the piece for which they want to highlight legal moves. The selected piece’s current square and all squares it can legally move to are highlighted. This is a local operation and has no effect on remote users’ screens.
-            """;
+            - Make Move: Allows the user to input what move they want to make.\s
+                    The board is updated to reflect the result of the move, and\s
+                    the board automatically updates on all clients involved in the game.
+            - Resign: Prompts the user to confirm they want to resign.\s
+                    If they do, the user forfeits the game and the game is over.\s
+                    Does not cause the user to leave the game.
+            - Highlight Legal Moves: Allows the user to input the piece for which they want to highlight legal moves.\s
+                        The selected piece’s current square and all squares it can legally move to are highlighted.\s
+                        This is a local operation and has no effect on remote users’ screens.
+           \s""";
     }
 
     @Override

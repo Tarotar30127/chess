@@ -51,7 +51,7 @@ public class WebSocketHandler {
                 connect(session, command);
             }
             case "MAKE_MOVE" -> {
-                Make_Move command = gson.fromJson(msg, Make_Move.class);
+                MakeMove command = gson.fromJson(msg, MakeMove.class);
                 makeMove(session, command);
             }
             case "LEAVE" -> {
@@ -196,7 +196,7 @@ public class WebSocketHandler {
         session.close();
     }
 
-    private void makeMove(Session session, Make_Move command) throws ResponseException, IOException {
+    private void makeMove(Session session, MakeMove command) throws ResponseException, IOException {
         String authToken = command.getAuthToken();
         AuthData auth = service.getAuthProfile(authToken);
         if (auth == null) {
@@ -259,7 +259,7 @@ public class WebSocketHandler {
         LoadGame load = new LoadGame(updatedGameData.game());
         ConnectionHandler.broadcast(load, gameId, session);
         ConnectionHandler.direct(load, session);
-        var moveMessage = new Notifcation(auth.username() + " made a move.");
+        var moveMessage = new Notifcation(auth.username() + " made a move to "+ newMove.getEndPosition());
         ConnectionHandler.broadcast(moveMessage, gameId, session);
         if (checkmate) {
             var gameOverMsg = new Notifcation("Checkmate " + playerColor + " wins.");

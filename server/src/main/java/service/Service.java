@@ -153,7 +153,8 @@ public class Service {
     }
     public void resetBoard(int gameId) throws ResponseException {
         GameData currentGame = gameDAO.getGame(gameId);
-        GameData newGame = new GameData(currentGame.gameId(), currentGame.whiteUserName(), currentGame.blackUserName(),currentGame.gameName(), new ChessGame());
+        GameData newGame = new GameData(currentGame.gameId(), currentGame.whiteUserName(),
+                currentGame.blackUserName(),currentGame.gameName(), new ChessGame());
         gameDAO.updateGame(newGame);
     }
     public void updatePlayer(GameData updatedGame){
