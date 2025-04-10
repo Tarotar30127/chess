@@ -85,13 +85,14 @@ public class GameClient implements ServerMessageObserver{
 
         System.out.println("Enter the row (1-8) of the piece:");
         int startRow = Integer.parseInt(scanner.nextLine().strip());
-        if (startRow <=0 || startRow > 8 || startColChar <= 'a' || startColChar > 'h') {
-            return "Invalid position! Please enter a valid row (1-8) and column (a-h).";
-        }
+
         Map<Character, Integer> charToNumMap = Map.of(
                 'a', 1, 'b', 2, 'c', 3, 'd', 4, 'e', 5, 'f', 6, 'g', 7, 'h', 8
         );
-        Integer startCol = charToNumMap.get(startColChar);
+        int startCol = charToNumMap.get(startColChar);
+        if (startRow < 0 || startRow > 9 || startCol < 0 || startCol > 9) {
+            return "Invalid position! Please enter a valid row (1-8) and column (a-h).";
+        }
         ChessPosition startPosition = new ChessPosition(startRow, startCol);
         Collection<ChessMove> legalMoves = chessGame.validMoves(startPosition);
         if (legalMoves.isEmpty()) {
@@ -181,7 +182,6 @@ public class GameClient implements ServerMessageObserver{
         ChessMove move = new ChessMove(startPosition, endPosition, promotion);
         server.makeMove(new Make_Move(userAuth.authToken(), gameId, move));
         return "Successfully submitted move";
-
 
     }
 

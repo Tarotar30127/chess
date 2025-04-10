@@ -1,7 +1,6 @@
 package ui;
 
 import client.ServerFacade;
-import client.ServerMessageObserver;
 import exception.ResponseException;
 import model.AuthData;
 
@@ -14,7 +13,7 @@ public class PreLoginClient {
     private final Scanner scanner = new Scanner(System.in);
     private ServerFacade server;
 
-    public PreLoginClient(String serverUrl) throws ResponseException {
+    public PreLoginClient(String serverUrl) {
         this.server = new ServerFacade(serverUrl);
 
     }

@@ -2,7 +2,6 @@ package ui;
 
 import chess.ChessGame;
 import client.ServerFacade;
-import com.google.gson.JsonObject;
 import exception.ResponseException;
 import model.AuthData;
 
