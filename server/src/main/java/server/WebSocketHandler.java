@@ -87,6 +87,7 @@ public class WebSocketHandler {
 
 
     private void connect(Session session, Connect command) throws ResponseException, IOException {
+        System.out.print(command);
         String authToken = command.getAuthToken();
         AuthData auth = service.getAuthProfile(authToken);
         if (auth == null) {
@@ -105,12 +106,13 @@ public class WebSocketHandler {
         }
         ChessGame.TeamColor teamColor = null;
         String serverMessage = null;
-        if ((gameData.blackUserName().equals(auth.username())) || (gameData.whiteUserName().equals(auth.username()))) {
-            if (gameData.whiteUserName().equals(auth.username())) {
+        if ((gameData.blackUserName()!=null && gameData.blackUserName().equals(auth.username()))
+                || (gameData.blackUserName()!=null && gameData.whiteUserName().equals(auth.username()))) {
+            if (gameData.whiteUserName()!=null && gameData.whiteUserName().equals(auth.username())) {
                 teamColor = ChessGame.TeamColor.WHITE;
                 serverMessage = String.format("%s has joined the game as %s".formatted(auth.username(), teamColor));
             }
-            if (gameData.blackUserName().equals(auth.username())) {
+            if (gameData.blackUserName()!=null && gameData.blackUserName().equals(auth.username())) {
                 teamColor = ChessGame.TeamColor.BLACK;
                 serverMessage = String.format("%s has joined the game as %s".formatted(auth.username(), teamColor));
             }

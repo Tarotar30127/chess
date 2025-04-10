@@ -224,14 +224,11 @@ public class GameClient implements ServerMessageObserver{
     @Override
     public void notify (String notification) {
         try {
-            System.out.print(notification);
             if (notification.contains("\"serverMessageType\":\"NOTIFICATION\"")) {
                 Notifcation notify = new Gson().fromJson(notification, Notifcation.class);
-                System.out.print(notify.getMessage());
                 printNotification(notify.getMessage());
             } else if (notification.contains("\"serverMessageType\":\"ERROR\"")) {
-                Error error = new Gson().fromJson(notification, Error.class);
-                System.out.print(error.getMessage());
+                websocket.messages.Error error = new Gson().fromJson(notification, websocket.messages.Error.class);
                 printError(error.getMessage());
             } else if (notification.contains("\"serverMessageType\":\"LOAD_GAME\"")) {
                 LoadGame loadGame = new Gson().fromJson(notification, LoadGame.class);
