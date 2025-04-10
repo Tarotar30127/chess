@@ -185,7 +185,7 @@ public class GameClient implements ServerMessageObserver{
 
     }
 
-    private static @Nullable ChessPosition getChessPosition (Map<Character, Integer> charToNumMap, char startColChar) {
+    private static ChessPosition getChessPosition (Map<Character, Integer> charToNumMap, char startColChar) {
         int startRow = Integer.parseInt(scanner.nextLine().strip());
         int startCol = charToNumMap.get(startColChar);
         ChessPosition startPosition = new ChessPosition(startRow, startCol);
